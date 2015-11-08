@@ -1,12 +1,4 @@
 import ipaddress
-# AS
-# - attributes
-#   - asn
-#   - ipv4_prefixes
-#   - as-path
-#   - next-hop-ip
-#   - next-hop-asn
-
 
 class AutonomousSystem:
 
@@ -17,7 +9,7 @@ class AutonomousSystem:
         # self.ipv6_prefixes = []
         # self.next_hop_ipv4 = None
         # self.next_hop_ipv6 = None
-        # # self.next_hop_asn = None
+        # self.next_hop_asn = None
 
     def _valid_as_path(self, as_path):
         if ((tuple(as_path) or not as_path)
@@ -77,8 +69,3 @@ class AutonomousSystem:
     @property
     def next_hop_asn(self):
         return self.as_path[0]
-
-    # @next_hop_asn.setter
-    # def next_hop_asn(self, next_hop_asn):
-    #     if len(self.as_path) > 0:
-    #         self.__next_hop_asn = self.as_path[0]
