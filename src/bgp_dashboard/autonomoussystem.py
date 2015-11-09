@@ -12,6 +12,7 @@ class AutonomousSystem:
         # self.next_hop_asn = None
 
     def _valid_as_path(self, as_path):
+        # as_path must be empty or a tuple of integers
         if ((tuple(as_path) or not as_path)
         and all(isinstance(asn, int) for asn in as_path)):
             return True
