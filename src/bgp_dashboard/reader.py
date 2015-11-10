@@ -1,6 +1,8 @@
 class FileReaderIPv4:
+    """"Read 'show ip bgp' data from a text file and return a tuple to be processed"""
 
     def __build_data(lines):
+        # ugly code to be refactored... someday
         for route in lines:
             if "/" in route[1]:
                 ipv4_prefix = route[1]
@@ -26,7 +28,6 @@ class FileReaderIPv4:
         return(ipv4_prefix, asn, next_hop_asn, weight, local_pref, metric, next_hop_ipv4, as_path)
 
     def get_data(self, filename):
-        """Read 'show ip bgp' data from a text file"""
         with open(filename, 'r') as data_file:
             lines = []
             for line in data_file:

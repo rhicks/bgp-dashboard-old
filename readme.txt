@@ -1,3 +1,13 @@
+BGP Dashboard
+=============
+
+A work in progress
+
+##### Run tests: #####
+$REPO/bgp-dashboard/src
+$ python3 -m unittest
+
+##### Brain Storming: #####
 get a list of the "show ip bgp" data from a cisco router
   - cloginrc
   - paramiko
@@ -26,4 +36,3 @@ Thoughts:
 
 Get Data
  The program should log into the router a $TIME interval and pull the "show ip bgp" and "show ip bgp ipv6 unicast" for parsing
- 
