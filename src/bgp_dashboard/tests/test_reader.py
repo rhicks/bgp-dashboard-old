@@ -22,7 +22,7 @@ class FileReaderIPv4Test(unittest.TestCase):
                     if "/" in route[1]:
                         print(route[6]) # next_hop_asn
                     else:
-                        print(route[5])
+                        print(route[5]) # next_hop_asn
                 # print(route)
                 # break
             # if len(line) > 0:
