@@ -4,8 +4,8 @@ BGP Dashboard
 A work in progress
 
 ##### Run tests: #####
-$REPO/bgp-dashboard/src
-$ python3 -m unittest
+ - cd $REPO/bgp-dashboard/src
+ - python3 -m unittest
 
 ##### Brain Storming: #####
 get a list of the "show ip bgp" data from a cisco router
