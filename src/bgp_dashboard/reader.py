@@ -53,16 +53,9 @@ class FileReaderIPv4:
             lines = []
             for line in data_file:
                 line = line.lstrip().rstrip()
-                if "/" in line:
-                    if len(lines) == 0:
-                        lines.append(tuple(line.split()))
-                        continue
-                    else:
-                        yield FileReaderIPv4.__build_data(lines)
-                        lines = []
-                        lines.append(tuple(line.split()))
-                elif (line.startswith("*") or line.startswith("r i") or line.startswith("r>i")):
-                    lines.append(tuple(line.split()))
+                print(line[0:3])
+                print(line[4:21])
+                print(line[21:42])
 
 class FileReaderIPv6:
     """Read 'show ip bgp ipv6 unicast' data from a text file"""
