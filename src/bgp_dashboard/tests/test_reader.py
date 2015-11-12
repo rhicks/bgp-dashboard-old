@@ -6,10 +6,6 @@ from collections import namedtuple
 
 class FileReaderIPv4Test(unittest.TestCase):
 
-    def test_bad_filename_should_return_FileNotFoundError(self):
-            with self.assertRaises(EnvironmentError):
-                self.data = FileReaderIPv4.get_data(self, "../bgp-dat.txt")
-
     def test_reader_should_return_a_tuple_of_data(self):
         # format: ipv4_prefix, dest-asn, next-hop-asn,
         #         weight, local_pref, metric, next_hop_ipv4, tuple(as_path)
@@ -17,8 +13,8 @@ class FileReaderIPv4Test(unittest.TestCase):
         test_data = next(self.data)  # get first tuple from the list to compare
         self.assertTupleEqual(
             ('1.0.0.0/24', '15169', '15169', '0', '1000', '0', '198.32.195.34', ('15169',)), test_data)
-        # for line in self.data:
-        #     print(line)
+        for line in self.data:
+            print(line)
 
     def test_should_be_able_to_create_AutonomousSystem_object_from_data(self):
         self.data = FileReaderIPv4.get_data(self, "../bgp-data.txt")
