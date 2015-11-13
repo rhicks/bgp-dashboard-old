@@ -1,11 +1,15 @@
 from collections import namedtuple
 
+
 class FileReaderIPv4:
     """"Read 'show ip bgp' data from a text file and return a tuple to be processed"""
 
     def __init__(self, filename):
         self.filename = filename
         self.previous_line = None
+        self.__set_defaults()
+
+    def __set_defaults(self):
         self.STATUS_START = 0
         self.STATUS_END = 3
         self.NETWORK_START = 4
@@ -23,6 +27,8 @@ class FileReaderIPv4:
         self.ORIGN = -1
 
     def __parse_line(self, line, double_line):
+        self.__set_defaults()
+
         if double_line:
             self.NETWORK_END += 1
             self.NEXTHOP_START += 1
@@ -48,7 +54,8 @@ class FileReaderIPv4:
 
     def __parse_input(self, line):
         as_path = line[self.PATH_START:self.PATH_END].lstrip().rstrip()
-        ipv4_prefix = line[self.NETWORK_START:self.NETWORK_END].lstrip().rstrip()
+        ipv4_prefix = line[
+            self.NETWORK_START:self.NETWORK_END].lstrip().rstrip()
 
         if as_path:
             self.previous_line = None
@@ -63,7 +70,6 @@ class FileReaderIPv4:
     def get_data(self):
         real_data_begins = False
         with open(self.filename, 'r') as data_file:
-            lines = []
             for line in data_file:
                 line = line.lstrip().rstrip()
                 if real_data_begins:
