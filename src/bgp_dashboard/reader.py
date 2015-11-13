@@ -10,6 +10,7 @@ class FileReaderIPv4:
         self.__set_defaults()
 
     def __set_defaults(self):
+        # sample: *>i 1.0.4.0/24       198.32.195.42            0   1000      0 6939 4826 38803 56203 i
         self.STATUS_START = 0
         self.STATUS_END = 3
         self.NETWORK_START = 4
@@ -26,10 +27,10 @@ class FileReaderIPv4:
         self.PATH_END = -2
         self.ORIGN = -1
 
-    def __parse_line(self, line, double_line):
+    def __parse_line(self, line, line_type):
         self.__set_defaults()
 
-        if double_line:
+        if line_type == "double_line":
             self.NETWORK_END += 1
             self.NEXTHOP_START += 1
             self.NEXTHOP_END += 1
@@ -40,6 +41,10 @@ class FileReaderIPv4:
             self.WEIGHT_START += 1
             self.WEIGHT_END += 1
             self.PATH_START += 1
+
+        if line_type == "source_route":
+            print(line + "ERROR RHICKS 2")
+            self.PATH_START = 61
 
         status = line[self.STATUS_START:self.STATUS_END].lstrip().rstrip()
         ipv4_prefix = line[self.NETWORK_START:self.NETWORK_END].lstrip().rstrip()
@@ -54,29 +59,67 @@ class FileReaderIPv4:
 
     def __parse_input(self, line):
         as_path = line[self.PATH_START:self.PATH_END].lstrip().rstrip()
-        ipv4_prefix = line[
-            self.NETWORK_START:self.NETWORK_END].lstrip().rstrip()
+        ipv4_prefix = line[self.NETWORK_START:self.NETWORK_END].lstrip().rstrip()
 
         if as_path:
             self.previous_line = None
-            return(self.__parse_line(line, False))
+            if as_path == "0":
+                return self.__parse_line(line, "source_route")
+            else:
+                return self.__parse_line(line, "double_line")
         else:
             if self.previous_line == None:
                 self.previous_line = line
             else:
                 line = self.previous_line + " " + line
-                return(self.__parse_line(line, True))
+                return self.__parse_line(line, "normal")
+
 
     def get_data(self):
-        real_data_begins = False
         with open(self.filename, 'r') as data_file:
+            real_data_begins = False
+            lines = []
+
             for line in data_file:
                 line = line.lstrip().rstrip()
                 if real_data_begins:
-                    yield self.__parse_input(line)
+                    try:
+                        route = self.__parse_input(line)
+                        if route[1]:
+                            if len(lines) == 0:
+                                lines.append(route)
+                                continue
+                            else:
+                                if len(lines) > 1:
+                                    templist = list(lines[1])
+                                    templist[1] = lines[0][1]
+                                    yield tuple(templist)
+                                    lines = []
+                                    lines.append(route)
+                                else:
+                                    #pass
+                                    yield lines[0]
+                        else:
+                            if ">" in route[0]:
+                                lines.append(route)
+                    except ValueError as e:
+                        print("RHICKS ERROR" + line + e)
+                        pass
                 elif (line.startswith("*") or line.startswith("r i") or line.startswith("r>i")):
                     real_data_begins = True
-                    yield self.__parse_input(line)
+                    try:
+                        route =  self.__parse_input(line)
+                        print(route[0])
+                        if ">" in route[0]:
+                            lines.append(route)
+                    except:
+                        pass
+            # for route in lines:
+            #     print(route)
+            #yield lines
+
+
+
 
 
 class FileReaderIPv6:

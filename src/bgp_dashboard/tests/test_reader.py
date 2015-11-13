@@ -7,12 +7,13 @@ from collections import namedtuple
 class FileReaderIPv4Test(unittest.TestCase):
 
     def setUp(self):
-        self.reader = FileReaderIPv4("../bgp-data.txt")
+        self.reader = FileReaderIPv4("../bgp-data-full.txt")
         self.data = self.reader.get_data()
 
     def test_nothing(self):
-        for line in self.data:
-            print(line)
+        #route = (status, ipv4_prefix, next_hop_ipv4, metric, local_pref, weight, as_path, origin)
+        for route in self.data:
+            print(route)
 
     # def test_reader_should_return_a_tuple_of_data(self):
     #     # format: ipv4_prefix, dest-asn, next-hop-asn,
