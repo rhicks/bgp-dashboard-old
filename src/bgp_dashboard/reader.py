@@ -67,11 +67,11 @@ class FileReaderIPv4:
                         lines.append(line)
                         if self.line_is_the_best_route(line):
                             lines = []
-                            yield line
+                            yield tuple(line.split())
                     else:
                         if self.line_is_the_best_route(line) and len(lines) > 0:
                             lines.append(line)
-                            yield self.combine_best_route_and_network_prefix(lines)
+                            yield tuple(self.combine_best_route_and_network_prefix(lines).split())
                             lines = []
 
 
