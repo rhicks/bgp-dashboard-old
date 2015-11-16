@@ -10,7 +10,7 @@ class FileReaderIPv4Test(unittest.TestCase):
         self.reader = FileReaderIPv4("../bgp-data-full.txt")
         self.data = self.reader.get_data()
 
-    def test_nothing(self):
+    def nothing(self):
         #route = (status, ipv4_prefix, next_hop_ipv4, metric, local_pref, weight, as_path, origin)
         #*>i 223.232.0.0/16 198.32.163.209           0   1050      0 4600 11164 10026 9498 45609 45609 45609 i
         Route = namedtuple('Route', 'status ipv4_prefix next_hop_ipv4 metric local_pref weight as_path origin')
@@ -30,3 +30,14 @@ class FileReaderIPv4Test(unittest.TestCase):
             origin= route[-1]
             myRoute = Route(status, ipv4_prefix, next_hop_ipv4, metric, local_pref, weight, as_path, origin)
             print(myRoute)
+
+    def test_string(self):
+        metrics = set()
+        for route in self.data:
+            print(route)
+            # if route[6]:
+            #     print(route[6][0])
+            # #metrics.add(route[6])
+        for line in self.reader.garbage_lines:
+            print(line)
+        print(metrics)

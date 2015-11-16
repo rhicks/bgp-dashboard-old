@@ -6,50 +6,73 @@ class FileReaderIPv4:
 
     def __init__(self, filename):
         self.filename = filename
-        self.STATUS_START = 0
-        self.STATUS_END = 3
         self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+        self.garbage_lines = []
 
-    def line_is_not_garbage(self, line):
+    def _line_is_not_garbage(self, line):
         valid_starts = ("*", "r i", "r>i")
         if line == "":
             return False
+            self.garbage_lines.append(line)
         if line.startswith(valid_starts):
             return True
-        if line.startswith("0.0.0.0"):
-            return False
+        # if line.startswith("0.0.0.0"):
+        #     self.garbage_lines.append(line)
+        #     return False
         if self.ipv4_regex.match(line.split()[0]):
             return True
         else:
+            self.garbage_lines.append(line)
             return False
 
-    def line_is_multiline(self, line):
+    def _line_is_multiline(self, line):
         if len(line.split()) < 4:
             return True
 
-    def line_contains_the_network_prefix(self, line):
-        route = line[4:]  # remove the route status info from the line
+    def _line_contains_the_network_prefix(self, line):
+        route = line[4:]  # remove the status info from the line
         if route.split(' ', 1)[0]:
             return True
         else:
             return False
 
-    def line_is_the_best_route(self, line):
-        status = line[self.STATUS_START:self.STATUS_END]
-        # print(status)
+    def _line_is_the_best_route(self, line):
+        status = line[0:3] # slice for status
         if ">" in status:
             return True
 
-    def combine_best_route_and_network_prefix(self, data):
+    def _combine_best_route_and_network_prefix(self, data):
         good_prefix = None
         for line in data:
-            status = line[self.STATUS_START:self.STATUS_END]
-            route = line[4:]  # remove the route status info from the line
+            status = line[0:3] # slice for status
+            route = line[4:]  # remove the status info from the line
             prefix = route.split(' ', 1)[0]
             if not prefix:
-                return(status.lstrip().rstrip() + " " + good_prefix.lstrip().rstrip() + " " + route.lstrip().rstrip())
+                return(status.lstrip().rstrip() +
+                        " " + good_prefix.lstrip().rstrip() +
+                        "    " + route.lstrip().rstrip())
             else:
                 good_prefix = prefix
+
+    def _split_line_into_route_fields(self, line):
+        status = line[0:3] # slice for status
+        line = line[4:]  # remove the route status info from the line
+        network = line.split(None, 1)[0] # first split item for network
+        nexthop = line.split(None, 2)[1] # second split item for nexthop
+        end_of_line = line.split(None, 1)[1] # remove the network from the line to set a fixed starting place for slicing remaining items
+        metric = end_of_line[18:26] # slice for metric
+        local_pref = end_of_line[27:33] # slice for local_pref
+        weight = end_of_line[34:40] # slice for weight
+        as_path = end_of_line[41:-1] # slice for as_path (41 to end of the line -1)
+        origin = end_of_line[-1] # slice for origin (-1 is last item)
+        return (status.strip(),
+                network.strip(),
+                nexthop.strip(),
+                metric.strip(),
+                local_pref.strip(),
+                weight.strip(),
+                tuple(as_path.split()),
+                origin.strip())
 
     def get_data(self):
         print()
@@ -57,18 +80,18 @@ class FileReaderIPv4:
         with open(self.filename, 'r') as data_file:
             for line in data_file:
                 line = line.lstrip().rstrip()
-                if self.line_is_not_garbage(line):
-                    if self.line_is_multiline(line):
-                        line = line + " " + data_file.readline().lstrip().rstrip()
-                    if self.line_contains_the_network_prefix(line):
+                if self._line_is_not_garbage(line):
+                    if self._line_is_multiline(line):
+                        line = line + "  " + data_file.readline().lstrip().rstrip()
+                    if self._line_contains_the_network_prefix(line):
                         lines.append(line)
-                        if self.line_is_the_best_route(line):
+                        if self._line_is_the_best_route(line):
                             lines = []
-                            yield tuple(line.split())
+                            yield (self._split_line_into_route_fields(line))
                     else:
-                        if self.line_is_the_best_route(line) and len(lines) > 0:
+                        if self._line_is_the_best_route(line) and len(lines) > 0:
                             lines.append(line)
-                            yield tuple(self.combine_best_route_and_network_prefix(lines).split())
+                            yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)))
                             lines = []
 
 
