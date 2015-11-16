@@ -7,7 +7,7 @@ from collections import namedtuple
 class FileReaderIPv4Test(unittest.TestCase):
 
     def setUp(self):
-        self.reader = FileReaderIPv4("../bgp-data.txt")
+        self.reader = FileReaderIPv4("../bgp-data-full.txt")
         self.data = self.reader.get_data()
 
     def test_nothing(self):

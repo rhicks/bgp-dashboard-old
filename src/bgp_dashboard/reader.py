@@ -11,13 +11,10 @@ class FileReaderIPv4:
         self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 
     def line_is_not_garbage(self, line):
+        valid_starts = ("*", "r i", "r>i")
         if line == "":
             return False
-        if line.startswith("*"):
-            return True
-        if line.startswith("r i"):
-            return True
-        if line.startswith("r>i"):
+        if line.startswith(valid_starts):
             return True
         if line.startswith("0.0.0.0"):
             return False
