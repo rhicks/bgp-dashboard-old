@@ -7,22 +7,22 @@ class FileReaderIPv4:
     def __init__(self, filename):
         self.filename = filename
         self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
-        self.garbage_lines = []
+        self._garbage_lines = []
 
     def _line_is_not_garbage(self, line):
         valid_starts = ("*", "r i", "r>i")
         if line == "":
             return False
-            self.garbage_lines.append(line)
+            ßself._garbage_lines.append(line)
         if line.startswith(valid_starts):
             return True
-        # if line.startswith("0.0.0.0"):
-        #     self.garbage_lines.append(line)
-        #     return False
+        if line.startswith("0.0.0.0"):
+            self._garbage_lines.append(line)
+            return False
         if self.ipv4_regex.match(line.split()[0]):
             return True
         else:
-            self.garbage_lines.append(line)
+            self._garbage_lines.append(line)
             return False
 
     def _line_is_multiline(self, line):
@@ -59,7 +59,7 @@ class FileReaderIPv4:
         line = line[4:]  # remove the route status info from the line
         network = line.split(None, 1)[0] # first split item for network
         nexthop = line.split(None, 2)[1] # second split item for nexthop
-        end_of_line = line.split(None, 1)[1] # remove the network from the line to set a fixed starting place for slicing remaining items
+        end_of_line = line.split(None, 1)[1] # remove the network from the line
         metric = end_of_line[18:26] # slice for metric
         local_pref = end_of_line[27:33] # slice for local_pref
         weight = end_of_line[34:40] # slice for weight
@@ -93,6 +93,10 @@ class FileReaderIPv4:
                             lines.append(line)
                             yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)))
                             lines = []
+
+    def get_ignored_lines(self):
+        if len(self._garbage_lines) > 0:
+            return tuple(self._garbage_lines)
 
 
 class FileReaderIPv6:
