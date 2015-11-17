@@ -2,7 +2,12 @@ import re
 
 
 class FileReaderIPv4:
-    """"Read 'show ip bgp' data from a text file and return a tuple to be processed"""
+    """Read 'show ip bgp' data from a text file and return a tuple to be processed
+        Example Return:
+        ('*>i', '223.252.192.0/19', '4.53.200.1', '0', '1000', '0', ('3356', '1239', '4837', '45062'), 'i')
+        status, network, next_hop_ip, metric, local_pref, weight, as_path, origin
+    """
+
 
     def __init__(self, filename):
         self.filename = filename
@@ -13,7 +18,7 @@ class FileReaderIPv4:
         valid_starts = ("*", "r i", "r>i")
         if line == "":
             return False
-            ßself._garbage_lines.append(line)
+            self._garbage_lines.append(line)
         if line.startswith(valid_starts):
             return True
         if line.startswith("0.0.0.0"):
@@ -55,6 +60,13 @@ class FileReaderIPv4:
                 good_prefix = prefix
 
     def _split_line_into_route_fields(self, line):
+        # This is the most fragile part of the program.
+        # Cisco uses a mix of fixed and variable width fields.
+        # Plus, any optional fields are completely missing from the output
+        # making it impossible to split on space or any other character.
+        # This code uses slices to pull the fixed width optional fields from
+        # the output.  But first we remove the variable length fields from the
+        # line (status, network).
         status = line[0:3] # slice for status
         line = line[4:]  # remove the route status info from the line
         network = line.split(None, 1)[0] # first split item for network
