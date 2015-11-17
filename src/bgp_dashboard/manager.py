@@ -13,19 +13,17 @@ from collections import defaultdict
 
 class Manager:
     """Program manager"""
-
     def __init__(self):
         self.filename = FileReaderIPv4("../../bgp-data-full.txt")
         self.data = self.filename.get_data()
         self.default_asn = "3701"
-        self.asn_set = set()
 
-class ASN:
-    as_dict = {}
+class Autonomous_System:
+    dict_of_Autonomous_Systems = {}
     def __init__(self, as_number):
         self.list_of_ipv4_prefixes = []
         self.as_number = as_number
-        ASN.as_dict[self.as_number] = self
+        Autonomous_System.dict_of_Autonomous_Systems[self.as_number] = self
 
 class IPv4_Prefix:
     count = 0
@@ -58,57 +56,20 @@ class IPv4_Prefix:
 def get_data():
     manager = Manager()
     for line in manager.data:
+        # create the route objects
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
         Route = IPv4_Prefix(status, prefix, next_hop_ip, metric,  local_pref, weight, as_path, origin, manager)
-        if Route.destination_asn not in ASN.as_dict:
-            myASN = ASN(Route.destination_asn)
-            myASN.list_of_ipv4_prefixes.append(Route)
+        # add the route objects to the parent ASN list of routes
+        if Route.destination_asn not in Autonomous_System.dict_of_Autonomous_Systems:
+            new_asn = Autonomous_System(Route.destination_asn)
+            new_asn.list_of_ipv4_prefixes.append(Route)
         else:
+            Autonomous_System.dict_of_Autonomous_Systems[Rout.destination_asn].list_of_ipv4_prefixes
             pass
-
-    for asn in ASN.as_dict:
-        print(asn)
-        # for network in value.list_of_ipv4_prefixes:
-        #     print(key, network)
-    # print(myASN.list_of_ipv4_prefixes)
-        # manager.asn_set.add(myASN)
-    # for key, value in ASN.as_dict.items():
-    #     print(key)
     print("IPv4 Routing Table Size:", IPv4_Prefix.get_count())
-    print("Unique ASNs:", len(ASN.as_dict))
-    # print(ASN.as_dict)
-    # for asn in manager.asn_set:
-    #     print(asn.as_number)
-    #
-
-        # print(Route.next_hop_asn)
-        # print(Route.destination_asn)
-
-    #     if line[6]:
-    #         asn = int(line[6][0])
-    #         manager.asn_list[asn] = AutonomousSystem(asn)
-    #     else:
-    #         asn = int(manager.default_asn)
-    #         manager.asn_list[asn] = AutonomousSystem(asn)
-    # for myASN in manager.asn_list:
-    #     print(myASN)
-    # print(manager.asn_list)
+    print("Unique ASNs:", len(Autonomous_System.dict_of_Autonomous_Systems))
 
 
 
 if __name__ == '__main__':
     get_data()
-
-
-# ASN
-#     as_number = 3701
-#     list_of_ipv4_prefixes = list
-#
-# IPv4_Prefix
-#     prefix = 1.0.0.0/24
-#     next_hop_ip = 198.32.195.34
-#     metric = 0
-#     local_pref = 1000
-#     weight = 0
-#     as_path = 15169
-#     origin = i
