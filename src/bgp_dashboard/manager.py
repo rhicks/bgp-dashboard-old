@@ -3,30 +3,42 @@ from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
 from collections import defaultdict
 
-# get the data
-# read the route line
-# if the AS doesn't exist
-#   then create it
-# else
-#   Add the IPv4 prefix to the AS object with the full AS_PATH
-#
 
 class Manager:
     """Program manager"""
+
     def __init__(self):
         self.filename = FileReaderIPv4("../../bgp-data-full.txt")
         self.data = self.filename.get_data()
         self.default_asn = "3701"
 
+
 class Autonomous_System:
-    dict_of_Autonomous_Systems = {}
+    list_of_all = {}
+
     def __init__(self, as_number):
         self.list_of_ipv4_prefixes = []
         self.as_number = as_number
-        Autonomous_System.dict_of_Autonomous_Systems[self.as_number] = self
+        # Autonomous_System.list_of_all.add(self)
+        Autonomous_System.list_of_all[self.as_number] = self
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    # def __hash__(self):
+    #     return hash(self.as_number)
+
+    def add_prefix(self, ipv4_prefix):
+        self.list_of_ipv4_prefixes.append(ipv4_prefix)
+        # print("Appended %d to %d", ipv4_prefix.prefix, self.as_number)
+
 
 class IPv4_Prefix:
     count = 0
+
     def __init__(self, status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin, manager):
         IPv4_Prefix.count = IPv4_Prefix.count + 1
         self.status = status
@@ -47,10 +59,12 @@ class IPv4_Prefix:
             self.next_hop_asn = None
             self.destination_asn = manager.default_asn
 
+    def __str__(self):
+        return str(self.__dict__)
+
     @staticmethod
     def get_count():
         return IPv4_Prefix.count
-
 
 
 def get_data():
@@ -58,17 +72,20 @@ def get_data():
     for line in manager.data:
         # create the route objects
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
-        Route = IPv4_Prefix(status, prefix, next_hop_ip, metric,  local_pref, weight, as_path, origin, manager)
-        # add the route objects to the parent ASN list of routes
-        if Route.destination_asn not in Autonomous_System.dict_of_Autonomous_Systems:
-            new_asn = Autonomous_System(Route.destination_asn)
-            new_asn.list_of_ipv4_prefixes.append(Route)
+        Route = IPv4_Prefix(status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin, manager)
+        if Route.destination_asn in Autonomous_System.list_of_all:
+            old_asn = Autonomous_System.list_of_all.get(Route.destination_asn)
+            old_asn.add_prefix(Route)
         else:
-            Autonomous_System.dict_of_Autonomous_Systems[Rout.destination_asn].list_of_ipv4_prefixes
-            pass
-    print("IPv4 Routing Table Size:", IPv4_Prefix.get_count())
-    print("Unique ASNs:", len(Autonomous_System.dict_of_Autonomous_Systems))
+            new_asn = Autonomous_System(Route.destination_asn)
+            new_asn.add_prefix(Route)
 
+    print("IPv4 Routing Table Size:", IPv4_Prefix.get_count())
+    print("Unique ASNs:", len(Autonomous_System.list_of_all))
+
+    myASN = Autonomous_System.list_of_all.get("25899")
+    for route in myASN.list_of_ipv4_prefixes:
+        print(route)
 
 
 if __name__ == '__main__':
