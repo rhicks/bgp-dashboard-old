@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
-from collections import defaultdict
+# from collections import defaultdict
 
 
 class Manager:
@@ -14,13 +14,12 @@ class Manager:
 
 
 class Autonomous_System:
-    list_of_all = {}
+    dict_of_all = {}
 
     def __init__(self, as_number):
         self.list_of_ipv4_prefixes = []
         self.as_number = as_number
-        # Autonomous_System.list_of_all.add(self)
-        Autonomous_System.list_of_all[self.as_number] = self
+        Autonomous_System.dict_of_all[self.as_number] = self
 
     def __str__(self):
         return str(self.__dict__)
@@ -28,12 +27,8 @@ class Autonomous_System:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
-    # def __hash__(self):
-    #     return hash(self.as_number)
-
     def add_prefix(self, ipv4_prefix):
         self.list_of_ipv4_prefixes.append(ipv4_prefix)
-        # print("Appended %d to %d", ipv4_prefix.prefix, self.as_number)
 
 
 class IPv4_Prefix:
@@ -67,23 +62,24 @@ class IPv4_Prefix:
         return IPv4_Prefix.count
 
 
+
 def get_data():
     manager = Manager()
     for line in manager.data:
         # create the route objects
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
         Route = IPv4_Prefix(status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin, manager)
-        if Route.destination_asn in Autonomous_System.list_of_all:
-            old_asn = Autonomous_System.list_of_all.get(Route.destination_asn)
+        if Route.destination_asn in Autonomous_System.dict_of_all:
+            old_asn = Autonomous_System.dict_of_all.get(Route.destination_asn)
             old_asn.add_prefix(Route)
         else:
             new_asn = Autonomous_System(Route.destination_asn)
             new_asn.add_prefix(Route)
 
     print("IPv4 Routing Table Size:", IPv4_Prefix.get_count())
-    print("Unique ASNs:", len(Autonomous_System.list_of_all))
+    print("Unique ASNs:", len(Autonomous_System.dict_of_all))
 
-    myASN = Autonomous_System.list_of_all.get("25899")
+    myASN = Autonomous_System.dict_of_all.get("25899")
     for route in myASN.list_of_ipv4_prefixes:
         print(route)
 
