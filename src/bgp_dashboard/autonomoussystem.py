@@ -1,15 +1,21 @@
 import ipaddress
 
 class AutonomousSystem:
+    dict_of_all = {}
 
     def __init__(self, asn):
+        self.list_of_ipv4_prefixes = []
         self.asn = asn
-        # self.as_path = ()
-        # self.ipv4_prefixes = []
-        # self.ipv6_prefixes = []
-        # self.next_hop_ipv4 = None
-        # self.next_hop_ipv6 = None
-        # self.next_hop_asn = None
+        AutonomousSystem.dict_of_all[self.asn] = self
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def add_prefix(self, ipv4_prefix):
+        self.list_of_ipv4_prefixes.append(ipv4_prefix)
 
     def _valid_as_path(self, as_path):
         # as_path must be empty or a tuple of integers
