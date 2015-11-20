@@ -75,7 +75,8 @@ class FileReaderIPv4:
         metric = end_of_line[18:26] # slice for metric
         local_pref = end_of_line[27:33] # slice for local_pref
         weight = end_of_line[34:40] # slice for weight
-        as_path = end_of_line[41:-1] # slice for as_path (41 to end of the line -1)
+        as_path = end_of_line[41:-1] # slice for as_path (41 to end of the line -1)A
+        # aspath = [map(int, x) for x in tuple(as_path.split())]
         origin = end_of_line[-1] # slice for origin (-1 is last item)
         return (status.strip(),
                 network.strip(),
@@ -83,7 +84,7 @@ class FileReaderIPv4:
                 metric.strip(),
                 local_pref.strip(),
                 weight.strip(),
-                tuple(as_path.split()),
+                list(as_path.split()),
                 origin.strip())
 
     def get_data(self):

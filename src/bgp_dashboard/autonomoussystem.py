@@ -1,5 +1,6 @@
 import ipaddress
 
+
 class AutonomousSystem:
     dict_of_all = {}
 
@@ -27,49 +28,49 @@ class AutonomousSystem:
 
     @property
     def asn(self):
-        return self.__asn
+        return self._asn
 
     @asn.setter
     def asn(self, asn):
         if int(asn):
-            self.__asn = asn
+            self._asn = asn
         else:
             raise ValueError("ASN should be a positive number")
 
     @property
     def as_path(self):
-        return self.__as_path
+        return self._as_path
 
     @as_path.setter
     def as_path(self, as_path):
         if self._valid_as_path(as_path):
-            self.__as_path = as_path
+            self._as_path = as_path
         else:
             raise ValueError("Invalid AS Path")
 
     @property
     def ipv4_prefixes(self):
-        return self.__ipv4_prefixes
+        return self._ipv4_prefixes
 
     @ipv4_prefixes.setter
     def ipv4_prefixes(self, ipv4_prefixes):
         for prefix in ipv4_prefixes:
             try:
                 ipaddress.IPv4Network(prefix)
-                self.__ipv4_prefixes = ipv4_prefixes
+                self._ipv4_prefixes = ipv4_prefixes
             except:
                 raise ipaddress.AddressValueError("Invalid IPv4 Network")
 
     @property
     def ipv6_prefixes(self):
-        return self.__ipv6_prefixes
+        return self._ipv6_prefixes
 
     @ipv6_prefixes.setter
     def ipv6_prefixes(self, ipv6_prefixes):
         for prefix in ipv6_prefixes:
             try:
                 ipaddress.IPv6Network(prefix)
-                self.__ipv6_prefixes = ipv6_prefixes
+                self._ipv6_prefixes = ipv6_prefixes
             except:
                 raise ipaddress.AddressValueError("Invalid IPv6 Network")
 

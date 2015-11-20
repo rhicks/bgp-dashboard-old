@@ -22,12 +22,9 @@ class AutonomousSystemTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.nero.asn = "badasnnumber416545464"
 
-    def test_should_be_able_to_get_as_path_from_an_as(self):
-        self.assertEqual((6939, 4826, 38803, 56203), self.nero.as_path)
-
-    def test_bad_as_path_values_should_throw_a_ValueError(self):
-        with self.assertRaises(ValueError):
-            self.nero.as_path = ("aspath1234")
+    # def test_bad_as_path_values_should_throw_a_ValueError(self):
+    #     with self.assertRaises(ValueError):
+    #         self.nero.as_path = ("aspath1234")
 
     def test_as_path_can_be_a_single_asn(self):
         self.nero.as_path = (15159,)
