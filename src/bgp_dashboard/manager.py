@@ -4,7 +4,7 @@ from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
 
 
-class Manager:
+class Manager(object):
     """Program manager"""
 
     def __init__(self):
@@ -16,23 +16,23 @@ class Manager:
 def get_data():
     manager = Manager()
     for line in manager.data:
-        # create the route objects
+
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
         Route = IPv4Prefix(status, prefix, next_hop_ip, metric,
                            local_pref, weight, as_path, origin, manager.default_asn)
         if Route.destination_asn in AutonomousSystem.dict_of_all:
             old_asn = AutonomousSystem.dict_of_all.get(Route.destination_asn)
-            old_asn.add_prefix(Route)
+            old_asn.add_ipv4_prefix(Route)
         else:
             new_asn = AutonomousSystem(Route.destination_asn)
-            new_asn.add_prefix(Route)
+            new_asn.add_ipv4_prefix(Route)
 
     print("IPv4 Routing Table Size:", IPv4Prefix.get_count())
     print("Unique ASNs:", len(AutonomousSystem.dict_of_all))
 
-    myASN = AutonomousSystem.dict_of_all.get("15169")
-    for route in myASN.list_of_ipv4_prefixes:
-        print(route)
+    myASN = AutonomousSystem.dict_of_all.get("6509")
+    for route in myASN.get_ipv4_prefixes():
+        print(route.next_hop_asn)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import re
 
 
-class FileReaderIPv4:
+class FileReaderIPv4(object):
     """Read 'show ip bgp' data from a text file and return a tuple to be processed
         Example Return:
         ('*>i', '223.252.192.0/19', '4.53.200.1', '0', '1000', '0', ('3356', '1239', '4837', '45062'), 'i')
@@ -84,7 +84,7 @@ class FileReaderIPv4:
                 metric.strip(),
                 local_pref.strip(),
                 weight.strip(),
-                list(as_path.split()),
+                tuple(as_path.split()),
                 origin.strip())
 
     def get_data(self):
@@ -112,21 +112,21 @@ class FileReaderIPv4:
             return tuple(self._garbage_lines)
 
 
-class FileReaderIPv6:
+class FileReaderIPv6(object):
     """Read 'show ip bgp ipv6 unicast' data from a text file"""
     pass
 
 
-class RouterReaderIPv4:
+class RouterReaderIPv4(object):
     """Read 'show ip bgp' data from a router login session"""
     pass
 
 
-class RouterReaderIPv6:
+class RouterReaderIPv6(object):
     """Read 'show ip bgp ipv6 unicast' data from a router login session"""
     pass
 
 
-class BMPReader:
+class BMPReader(object):
     """Read BGP updates from a BGP Monitoring Protocol session"""
     pass
