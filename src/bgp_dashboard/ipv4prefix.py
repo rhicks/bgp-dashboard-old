@@ -32,59 +32,11 @@ class IPv4Prefix(object):
 
     def _valid_as_path(self, as_path):
         # as_path must be empty or a tuple of integers
-        if (tuple(as_path) or not as_path):
-        #and all(isinstance(asn, int) for asn in as_path)):
+        if (tuple(as_path) or not as_path
+        and all(isinstance(asn, int) for asn in as_path)):
             return True
         else:
             return False
-
-    @property
-    def status(self):
-        return self._status
-
-    @status.setter
-    def status(self, status):
-        self._status = status
-
-    @property
-    def prefix(self):
-        return self._prefix
-
-    @prefix.setter
-    def prefix(self, prefix):
-        self._prefix = prefix
-
-    @property
-    def next_hop_ip(self):
-        return self._next_hop_ip
-
-    @next_hop_ip.setter
-    def next_hop_ip(self, next_hop_ip):
-        self._next_hop_ip = next_hop_ip
-
-    @property
-    def metric(self):
-        return self._metric
-
-    @metric.setter
-    def metric(self, metric):
-        self._metric = metric
-
-    @property
-    def local_pref(self):
-        return self._local_pref
-
-    @local_pref.setter
-    def local_pref(self, local_pref):
-        self._local_pref = local_pref
-
-    @property
-    def weight(self):
-        return self._weight
-
-    @weight.setter
-    def weight(self, weight):
-        self._weight = weight
 
     @property
     def as_path(self):
@@ -98,22 +50,6 @@ class IPv4Prefix(object):
             raise ValueError("Invalid AS Path")
 
     @property
-    def origin(self):
-        return self._origin
-
-    @origin.setter
-    def origin(self, origin):
-        self._origin = origin
-
-    @property
-    def default_asn(self):
-        return self._default_asn
-
-    @default_asn.setter
-    def default_asn(self, default_asn):
-        self._default_asn = default_asn
-
-    @property
     def destination_asn(self):
         if self._as_path:
             if "{" in self._as_path[-1]:
@@ -121,7 +57,7 @@ class IPv4Prefix(object):
             else:
                 return self._as_path[-1]
         else:
-            return self._default_asn
+            return self.default_asn
 
     @property
     def next_hop_asn(self):

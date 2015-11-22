@@ -2,6 +2,10 @@
 from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
+from datetime import datetime
+import sys
+import socket
+import subprocess
 
 
 class Manager(object):
@@ -15,8 +19,12 @@ class Manager(object):
 
 def get_data():
     manager = Manager()
+    print("Processing data:", end="")
+    start_time = datetime.now()
     for line in manager.data:
-
+        if IPv4Prefix.get_count() % 10000 == 0:
+            print(".", end="")
+            sys.stdout.flush()
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
         Route = IPv4Prefix(status, prefix, next_hop_ip, metric,
                            local_pref, weight, as_path, origin, manager.default_asn)
@@ -27,12 +35,33 @@ def get_data():
             new_asn = AutonomousSystem(Route.destination_asn)
             new_asn.add_ipv4_prefix(Route)
 
+    print()
+    print("Processing Time: " + str(datetime.now() - start_time))
     print("IPv4 Routing Table Size:", IPv4Prefix.get_count())
     print("Unique ASNs:", len(AutonomousSystem.dict_of_all))
 
-    myASN = AutonomousSystem.dict_of_all.get("6509")
-    for route in myASN.get_ipv4_prefixes():
-        print(route.next_hop_asn)
+    next_hops = []
+
+    for k, v in AutonomousSystem.dict_of_all.items():
+        for route in v.get_ipv4_prefixes():
+            next_hops.append(route.next_hop_asn)
+
+    peers = (set(next_hops))
+
+
+    for peer in peers:
+        if (peer and (int(peer) < 64512 or int(peer) > 65534)) :
+            # print(peer)
+            # print(subprocess.getoutput("whois -h whois.cymru.com \" -n -f AS\"" + peer))
+            print(peer, subprocess.getoutput("dig +short AS" + peer + ".asn.cymru.com TXT").split("|")[-1])
+        else:
+            pass
+
+    print()
+    print("Processing Time: " + str(datetime.now() - start_time))
+    print("IPv4 Routing Table Size:", IPv4Prefix.get_count())
+    print("Unique ASNs:", len(AutonomousSystem.dict_of_all))
+    print("Peer Networks:", len(peers))
 
 
 if __name__ == '__main__':
