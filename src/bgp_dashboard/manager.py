@@ -4,7 +4,6 @@ from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
 from datetime import datetime
 import sys
-import socket
 import subprocess
 
 
@@ -35,11 +34,6 @@ def get_data():
             new_asn = AutonomousSystem(Route.destination_asn)
             new_asn.add_ipv4_prefix(Route)
 
-    print()
-    print("Processing Time: " + str(datetime.now() - start_time))
-    print("IPv4 Routing Table Size:", IPv4Prefix.get_count())
-    print("Unique ASNs:", len(AutonomousSystem.dict_of_all))
-
     next_hops = []
 
     for k, v in AutonomousSystem.dict_of_all.items():
@@ -48,11 +42,8 @@ def get_data():
 
     peers = (set(next_hops))
 
-
     for peer in peers:
         if (peer and (int(peer) < 64512 or int(peer) > 65534)) :
-            # print(peer)
-            # print(subprocess.getoutput("whois -h whois.cymru.com \" -n -f AS\"" + peer))
             print(peer, subprocess.getoutput("dig +short AS" + peer + ".asn.cymru.com TXT").split("|")[-1])
         else:
             pass
