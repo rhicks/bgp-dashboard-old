@@ -8,7 +8,6 @@ class FileReaderIPv4(object):
         status, network, next_hop_ip, metric, local_pref, weight, as_path, origin
     """
 
-
     def __init__(self, filename):
         self.filename = filename
         self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -42,20 +41,20 @@ class FileReaderIPv4(object):
             return False
 
     def _line_is_the_best_route(self, line):
-        status = line[0:3] # slice for status
+        status = line[0:3]  # slice for status
         if ">" in status:
             return True
 
     def _combine_best_route_and_network_prefix(self, data):
         good_prefix = None
         for line in data:
-            status = line[0:3] # slice for status
+            status = line[0:3]  # slice for status
             route = line[4:]  # remove the status info from the line
             prefix = route.split(' ', 1)[0]
             if not prefix:
                 return(status.lstrip().rstrip() +
-                        " " + good_prefix.lstrip().rstrip() +
-                        "    " + route.lstrip().rstrip())
+                       " " + good_prefix.lstrip().rstrip() +
+                       "    " + route.lstrip().rstrip())
             else:
                 good_prefix = prefix
 
@@ -67,17 +66,20 @@ class FileReaderIPv4(object):
         # This code uses slices to pull the fixed width optional fields from
         # the output.  But first we remove the variable length fields from the
         # line (status, network).
-        status = line[0:3] # slice for status
+        status = line[0:3]  # slice for status
         line = line[4:]  # remove the route status info from the line
-        network = line.split(None, 1)[0] # first split item for network
-        nexthop = line.split(None, 2)[1] # second split item for nexthop
-        end_of_line = line.split(None, 1)[1] # remove the network from the line
-        metric = end_of_line[18:26] # slice for metric
-        local_pref = end_of_line[27:33] # slice for local_pref
-        weight = end_of_line[34:40] # slice for weight
-        as_path = end_of_line[41:-1] # slice for as_path (41 to end of the line -1)A
+        network = line.split(None, 1)[0]  # first split item for network
+        nexthop = line.split(None, 2)[1]  # second split item for nexthop
+        # remove the network from the line
+        end_of_line = line.split(None, 1)[1]
+        metric = end_of_line[18:26]  # slice for metric
+        local_pref = end_of_line[27:33]  # slice for local_pref
+        weight = end_of_line[34:40]  # slice for weight
+        # slice for as_path (41 to end of the line -1)A
+        as_path = end_of_line[41:-1]
         # aspath = [map(int, x) for x in tuple(as_path.split())]
-        origin = end_of_line[-1] # slice for origin (-1 is last item)
+        origin = end_of_line[-1]  # slice for origin (-1 is last itemA
+        as_path = re.sub(r'\{[^)]*\}', '', as_path) # remove AS-SET info from as_path
         return (status.strip(),
                 network.strip(),
                 nexthop.strip(),
@@ -88,7 +90,6 @@ class FileReaderIPv4(object):
                 origin.strip())
 
     def get_data(self):
-        print()
         lines = []
         with open(self.filename, 'r') as data_file:
             for line in data_file:

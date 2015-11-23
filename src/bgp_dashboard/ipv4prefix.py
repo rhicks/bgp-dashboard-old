@@ -12,16 +12,6 @@ class IPv4Prefix(object):
         self.as_path = as_path
         self.origin = origin
         self.default_asn = default_asn
-        # self.destination_asn = None
-        # if self.as_path:
-        #     self.next_hop_asn = self.as_path[0]
-        #     if "{" in self.as_path[-1]:
-        #         self.destination_asn = self.as_path[-2]
-        #     else:
-        #         self.destination_asn = self.as_path[-1]
-        # else:
-        #     self.next_hop_asn = None
-        #     self.destination_asn = default_asn
 
     def __str__(self):
         return str(self.__dict__)
@@ -32,9 +22,9 @@ class IPv4Prefix(object):
 
     def _valid_as_path(self, as_path):
         # as_path must be empty or a tuple of integers
-        if (tuple(as_path) or not as_path
-        and all(isinstance(asn, int) for asn in as_path)):
-            return True
+        if (tuple(as_path) or not as_path):
+            if all(int(asn) for asn in as_path):
+                return True
         else:
             return False
 

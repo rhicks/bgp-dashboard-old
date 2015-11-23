@@ -27,7 +27,7 @@ class AutonomousSystem(object):
 
     @asn.setter
     def asn(self, asn):
-        if asn:
+        if int(asn):
             self._asn = asn
         else:
             raise ValueError("ASN should be a positive number")
