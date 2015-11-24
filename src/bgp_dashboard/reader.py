@@ -2,11 +2,11 @@ import re
 
 
 class FileReaderIPv4(object):
-    """Read 'show ip bgp' data from a text file and return a tuple to be processed
+    '''Read 'show ip bgp' data from a text file and return a tuple to be processed
         Example Return:
         ('*>i', '223.252.192.0/19', '4.53.200.1', '0', '1000', '0', ('3356', '1239', '4837', '45062'), 'i')
         status, network, next_hop_ip, metric, local_pref, weight, as_path, origin
-    """
+    '''
 
     def __init__(self, filename):
         self.filename = filename
@@ -14,13 +14,13 @@ class FileReaderIPv4(object):
         self._garbage_lines = []
 
     def _line_is_not_garbage(self, line):
-        valid_starts = ("*", "r i", "r>i")
-        if line == "":
+        valid_starts = ('*', 'r i', 'r>i')
+        if line == '':
             return False
             self._garbage_lines.append(line)
         if line.startswith(valid_starts):
             return True
-        if line.startswith("0.0.0.0"):
+        if line.startswith('0.0.0.0'):
             self._garbage_lines.append(line)
             return False
         if self.ipv4_regex.match(line.split()[0]):
@@ -42,7 +42,7 @@ class FileReaderIPv4(object):
 
     def _line_is_the_best_route(self, line):
         status = line[0:3]  # slice for status
-        if ">" in status:
+        if '>' in status:
             return True
 
     def _combine_best_route_and_network_prefix(self, data):
@@ -53,8 +53,8 @@ class FileReaderIPv4(object):
             prefix = route.split(' ', 1)[0]
             if not prefix:
                 return(status.lstrip().rstrip() +
-                       " " + good_prefix.lstrip().rstrip() +
-                       "    " + route.lstrip().rstrip())
+                       ' ' + good_prefix.lstrip().rstrip() +
+                       '    ' + route.lstrip().rstrip())
             else:
                 good_prefix = prefix
 
@@ -96,7 +96,7 @@ class FileReaderIPv4(object):
                 line = line.lstrip().rstrip()
                 if self._line_is_not_garbage(line):
                     if self._line_is_multiline(line):
-                        line = line + "  " + data_file.readline().lstrip().rstrip()
+                        line = line + '  ' + data_file.readline().lstrip().rstrip()
                     if self._line_contains_the_network_prefix(line):
                         lines.append(line)
                         if self._line_is_the_best_route(line):
@@ -114,20 +114,20 @@ class FileReaderIPv4(object):
 
 
 class FileReaderIPv6(object):
-    """Read 'show ip bgp ipv6 unicast' data from a text file"""
+    '''Read 'show ip bgp ipv6 unicast' data from a text file'''
     pass
 
 
 class RouterReaderIPv4(object):
-    """Read 'show ip bgp' data from a router login session"""
+    '''Read 'show ip bgp' data from a router login session'''
     pass
 
 
 class RouterReaderIPv6(object):
-    """Read 'show ip bgp ipv6 unicast' data from a router login session"""
+    '''Read 'show ip bgp ipv6 unicast' data from a router login session'''
     pass
 
 
 class BMPReader(object):
-    """Read BGP updates from a BGP Monitoring Protocol session"""
+    '''Read BGP updates from a BGP Monitoring Protocol session'''
     pass

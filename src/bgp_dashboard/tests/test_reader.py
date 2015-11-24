@@ -6,7 +6,7 @@ from ..reader import FileReaderIPv4
 class FileReaderIPv4Test(unittest.TestCase):
 
     def setUp(self):
-        self.reader = FileReaderIPv4("../bgp-data.txt")
+        self.reader = FileReaderIPv4('../bgp-data.txt')
         self.data = self.reader.get_data()
 
     def test_all_fields_should_be_valid(self):
@@ -22,7 +22,7 @@ class FileReaderIPv4Test(unittest.TestCase):
         self.ignored_lines_should_be_available_for_review()
 
     def metric_field_should_be_valid(self, route):
-        valid_metric_options = ("*>i", "r>i", "*>")
+        valid_metric_options = ('*>i', 'r>i', '*>')
         self.assertTrue(route[0] in valid_metric_options)
 
     def network_field_should_be_a_valid_ipv4_network(self, route):
@@ -54,11 +54,11 @@ class FileReaderIPv4Test(unittest.TestCase):
     def aspath_field_should_be_a_tuple_of_ints_or_None(self, route):
         if route[6]:
             for asn in route[6]:
-                if "{" or "}" in asn:
-                    asn = asn.strip("{")
-                    asn = asn.strip("}")
-                    if "," in asn:
-                        asns = asn.split(",")
+                if '{' or '}' in asn:
+                    asn = asn.strip('{')
+                    asn = asn.strip('}')
+                    if ',' in asn:
+                        asns = asn.split(',')
                         for asn in asns:
                             self.assertIsInstance(int(asn), int)
                 self.assertIsInstance(int(asn), int)
@@ -68,12 +68,12 @@ class FileReaderIPv4Test(unittest.TestCase):
             pass
 
     def origin_field_should_be_valid(self, route):
-        valid_origin_options = ("i", "?", "e")
+        valid_origin_options = ('i', '?', 'e')
         self.assertTrue(route[7] in valid_origin_options)
 
     def ignored_lines_should_be_available_for_review(self):
         ignored_input = self.reader.get_ignored_lines()
-        self.assertTrue(any(line.startswith("BGP") for line in ignored_input))
+        self.assertTrue(any(line.startswith('BGP') for line in ignored_input))
 
     # def test_output_all_data(self):
     #     for route in self.data:

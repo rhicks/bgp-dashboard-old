@@ -37,12 +37,12 @@ class IPv4Prefix(object):
         if self._valid_as_path(as_path):
             self._as_path = as_path
         else:
-            raise ValueError("Invalid AS Path")
+            raise ValueError('Invalid AS Path')
 
     @property
     def destination_asn(self):
         if self._as_path:
-            if "{" in self._as_path[-1]:
+            if '{' in self._as_path[-1]:
                 return self._as_path[-2]
             else:
                 return self._as_path[-1]
