@@ -1,7 +1,23 @@
 #! /usr/bin/env python3
+
+"""BGP Dashboard CLI Interface
+
+Usage:
+  manager.py -f <filename>
+  manager.py --version
+
+Options:
+  -h --help     Show this screen.
+  -f            File Name where "show ip bgp" data is located
+  --version     Show version.
+
+
+"""
+
 from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
+from docopt import docopt
 import sys
 import subprocess
 
@@ -11,8 +27,9 @@ DEFAULT_ASN = '3701'
 class Manager(object):
     '''Program manager'''
 
-    def __init__(self):
-        self.filename = FileReaderIPv4('../../bgp-data-full-asr9k.txt')
+    def __init__(self, filename):
+        # self.filename = FileReaderIPv4('../../bgp-data-full-asr9k.txt')
+        self.filename = FileReaderIPv4(filename)
         self.data = self.filename.get_data()
         # self.default_asn = DEFAULT_ASN
 
@@ -53,11 +70,13 @@ class Manager(object):
         print('Peer Networks:', len(self._list_of_peers()))
 
 
-def get_data():
-    manager = Manager()
+def get_data(filename):
+    manager = Manager(filename)
     manager.build_autonomous_systems()
     manager.print_details()
 
 
 if __name__ == '__main__':
-    get_data()
+    arguments = docopt(__doc__, version='BGP Dashboard 0.0.1')
+    print(arguments['<filename>'])
+    get_data(arguments['<filename>'])
