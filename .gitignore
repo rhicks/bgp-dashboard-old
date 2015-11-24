@@ -1,3 +1,4 @@
 __pycache__/
 *.py[cod]
 bgp-data-full.txt
+bgp-data-full-asr9k.txt

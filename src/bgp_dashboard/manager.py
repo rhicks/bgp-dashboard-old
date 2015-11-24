@@ -12,7 +12,7 @@ class Manager(object):
     '''Program manager'''
 
     def __init__(self):
-        self.filename = FileReaderIPv4('../../bgp-data-full.txt')
+        self.filename = FileReaderIPv4('../../bgp-data-full-asr9k.txt')
         self.data = self.filename.get_data()
         # self.default_asn = DEFAULT_ASN
 
