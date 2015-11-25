@@ -36,3 +36,38 @@ Thoughts:
 
 Get Data
  The program should log into the router a $TIME interval and pull the "show ip bgp" and "show ip bgp ipv6 unicast" for parsing
+
+
+CLI:
+bgp-dashboard.py 15169 -f bgp-data.txt
+  Is 15169 a peer?  Print JSON "y" or "n"
+  If "y", print misc details:
+    - next_hop_ip
+    - number of prefixes that use this ASN as next hop
+    - list/count of next-hop-asns connected to this ASN
+
+bgp-dashboard.py 15169 --next-hop-asn -f bgp-data.txt
+  Returns a list (JSON) of next hop ASNs for all routes for under 15169
+
+bgp-dashboard.py 15169 --routes -f bgp-data.txt
+  Returns a list (JSON) of all routes under 15169
+  All route details provided
+
+bgp-dashboard.py 15169 --routes --brief -f bgp-data.txt
+  Returns a list (JSON) of all routes under 15169
+  Just the prefix is provided
+
+bgp-dashboard.py -f bgp-data.txt
+  Return a list (JSON) of all peers
+  - Total number of peers
+    - AS Number of peer
+    - Name via cmyru dns
+    - Total routes
+    - Unique next-hop-asns
+      - Count of routes associated with each next-hop-asn
+
+bgp-dashboard.py --table-size -f bgp-data.txt
+  Return the number for routes
+
+bgp-dashboard.py --as-count -f bgp-data.txt
+  Return the number for routes

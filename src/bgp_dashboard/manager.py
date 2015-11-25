@@ -3,12 +3,13 @@
 """BGP Dashboard CLI Interface
 
 Usage:
-  manager.py -f <filename>
+  manager.py <asn> -f <filename>
   manager.py --version
 
 Options:
   -h --help     Show this screen.
   -f            File Name where "show ip bgp" data is located
+  --peers       List of all directly connected BGP peers
   --version     Show version.
 
 
@@ -22,6 +23,7 @@ import sys
 import subprocess
 
 DEFAULT_ASN = '3701'
+# DEFAULT_FILENAME = 'bgp-data.txt'
 
 
 class Manager(object):
@@ -34,7 +36,7 @@ class Manager(object):
         # self.default_asn = DEFAULT_ASN
 
     def build_autonomous_systems(self):
-        print('Processing data:', end='')
+        # print('Processing data:', end='')
         for line in self.data:
             if IPv4Prefix.get_count() % 10000 == 0:
                 print('.', end='')
@@ -70,16 +72,22 @@ class Manager(object):
         print('Peer Networks:', len(self._list_of_peers()))
 
 
-def get_data(filename):
-    manager = Manager(filename)
-    manager.build_autonomous_systems()
-    manager.print_details()
+def main(args):
+    if args['<filename>']:
+        try:
+            filename = args['<filename>']
+            manager = Manager(filename)
+            manager.build_autonomous_systems()
+            manager.print_details()
+        except(FileNotFoundError):
+            print("\nFile not found: {0}".format(filename), file=sys.stderr)
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='BGP Dashboard  0.0.1')
+    print(arguments)
     try:
-        sys.exit(get_data(arguments['<filename>']))
+        sys.exit(main(arguments))
     except(KeyboardInterrupt):
         print("\nExiting on user request.\n", file=sys.stderr)
         sys.exit(1)

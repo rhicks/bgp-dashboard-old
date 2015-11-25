@@ -91,22 +91,25 @@ class FileReaderIPv4(object):
 
     def get_data(self):
         lines = []
-        with open(self.filename, 'r') as data_file:
-            for line in data_file:
-                line = line.lstrip().rstrip()
-                if self._line_is_not_garbage(line):
-                    if self._line_is_multiline(line):
-                        line = line + '  ' + data_file.readline().lstrip().rstrip()
-                    if self._line_contains_the_network_prefix(line):
-                        lines.append(line)
-                        if self._line_is_the_best_route(line):
-                            lines = []
-                            yield (self._split_line_into_route_fields(line))
-                    else:
-                        if self._line_is_the_best_route(line) and len(lines) > 0:
+        try:
+            with open(self.filename, 'r') as data_file:
+                for line in data_file:
+                    line = line.lstrip().rstrip()
+                    if self._line_is_not_garbage(line):
+                        if self._line_is_multiline(line):
+                            line = line + '  ' + data_file.readline().lstrip().rstrip()
+                        if self._line_contains_the_network_prefix(line):
                             lines.append(line)
-                            yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)))
-                            lines = []
+                            if self._line_is_the_best_route(line):
+                                lines = []
+                                yield (self._split_line_into_route_fields(line))
+                        else:
+                            if self._line_is_the_best_route(line) and len(lines) > 0:
+                                lines.append(line)
+                                yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)))
+                                lines = []
+        except:
+            raise FileNotFoundError
 
     def get_ignored_lines(self):
         if len(self._garbage_lines) > 0:
