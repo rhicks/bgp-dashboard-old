@@ -77,6 +77,9 @@ def get_data(filename):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='BGP Dashboard 0.0.1')
-    print(arguments['<filename>'])
-    get_data(arguments['<filename>'])
+    arguments = docopt(__doc__, version='BGP Dashboard  0.0.1')
+    try:
+        sys.exit(get_data(arguments['<filename>']))
+    except(KeyboardInterrupt):
+        print("\nExiting on user request.\n", file=sys.stderr)
+        sys.exit(1)
