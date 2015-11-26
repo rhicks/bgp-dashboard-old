@@ -17,10 +17,11 @@ Options:
 
 from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
-from ipv4prefix import IPv4Prefix
+# from ipv4prefix import IPv4Prefix
 from docopt import docopt
 import sys
 import subprocess
+from collections import namedtuple
 
 DEFAULT_ASN = '3701'
 # DEFAULT_FILENAME = 'bgp-data.txt'
@@ -36,21 +37,45 @@ class Manager(object):
         # self.default_asn = DEFAULT_ASN
 
     def build_autonomous_systems(self):
-        # print('Processing data:', end='')
+        print('Processing data:', end='')
         for line in self.data:
-            if IPv4Prefix.get_count() % 10000 == 0:
-                print('.', end='')
-                sys.stdout.flush()
-            status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
-            Route = IPv4Prefix(status, prefix, next_hop_ip, metric,
-                               local_pref, weight, as_path, origin, DEFAULT_ASN)
-            if Route.destination_asn in AutonomousSystem.dict_of_all:
-                old_asn = AutonomousSystem.dict_of_all.get(
-                    Route.destination_asn)
-                old_asn.ipv4_prefixes.append(Route)
+            prefix = self._create_prefix(line)
+            # print(prefix)
+            # if len(AutonomousSystem.dict_of_all) % 10000 == 0:
+            #     print('.', end='')
+            #     sys.stdout.flush()
+            # if IPv4Prefix.get_count() % 10000 == 0:
+            #     print('.', end='')
+            #     sys.stdout.flush()
+            # status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
+            # Route = IPv4Prefix(status, prefix, next_hop_ip, metric,
+            #                    local_pref, weight, as_path, origin, DEFAULT_ASN)
+            if prefix.destination_asn in AutonomousSystem.dict_of_all:
+                old_asn = AutonomousSystem.dict_of_all.get(prefix.destination_asn)
+                old_asn.ipv4_prefixes.append(prefix)
             else:
-                new_asn = AutonomousSystem(Route.destination_asn)
-                new_asn.ipv4_prefixes.append(Route)
+                new_asn = AutonomousSystem(prefix.destination_asn)
+                new_asn.ipv4_prefixes.append(prefix)
+
+    def _create_prefix(self, line):
+        Prefix = namedtuple('Prefix', ['status', 'prefix', 'next_hop_ip', 'metric', 'local_pref', 'weight', 'as_path', 'origin', 'next_hop_asn', 'destination_asn'])
+        status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
+
+        if as_path:
+            next_hop_asn = as_path[0]
+            if '{' in as_path[-1]:
+                destination_asn = as_path[-2]
+            else:
+                destination_asn = as_path[-1]
+        else:
+            next_hop_asn = None
+            destination_asn = DEFAULT_ASN
+
+        return Prefix(status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin, next_hop_asn, destination_asn)
+
+
+
+
 
     def _list_of_peers(self):
         next_hops = []
@@ -67,7 +92,7 @@ class Manager(object):
             else:
                 pass
         print()
-        print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
+        # print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
         print('Peer Networks:', len(self._list_of_peers()))
 
