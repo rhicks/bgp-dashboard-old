@@ -3,8 +3,8 @@
 """BGP Dashboard CLI Interface
 
 Usage:
-  manager.py <asn> -f <filename>
-  manager.py --version
+  bgp-dashboard.py <asn> -f <filename>
+  bgp-dashboard.py --version
 
 Options:
   -h --help     Show this screen.
@@ -30,29 +30,34 @@ class Manager(object):
     '''Program manager'''
 
     def __init__(self, filename):
-        # self.filename = FileReaderIPv4('../../bgp-data-full-asr9k.txt')
         self.filename = FileReaderIPv4(filename)
-        self.data = self.filename.get_data()
-        # self.default_asn = DEFAULT_ASN
 
     def build_autonomous_systems(self):
-        # print('Processing data:', end='')
-        for line in self.data:
+        print('Processing data:', end='')
+        data = self.filename.get_data()
+        for line in data:
             if IPv4Prefix.get_count() % 10000 == 0:
                 print('.', end='')
                 sys.stdout.flush()
-            status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
-            Route = IPv4Prefix(status, prefix, next_hop_ip, metric,
-                               local_pref, weight, as_path, origin, DEFAULT_ASN)
-            if Route.destination_asn in AutonomousSystem.dict_of_all:
-                old_asn = AutonomousSystem.dict_of_all.get(
-                    Route.destination_asn)
-                old_asn.ipv4_prefixes.append(Route)
+            prefix = self.create_prefix(line)
+            asn = prefix.destination_asn
+            if asn not in AutonomousSystem.dict_of_all:
+                self.create_new_asn(asn).ipv4_prefixes.append(prefix)
             else:
-                new_asn = AutonomousSystem(Route.destination_asn)
-                new_asn.ipv4_prefixes.append(Route)
+                self.find_asn(asn).ipv4_prefixes.append(prefix)
 
-    def _list_of_peers(self):
+    def create_new_asn(self, asn):
+        return AutonomousSystem(asn)
+
+    def find_asn(self, asn):
+        return AutonomousSystem.dict_of_all.get(asn)
+
+    def create_prefix(self, line):
+        status, prefix, next_hop_ip, metric, local_pref, weight, as_path, origin = line
+        return IPv4Prefix(status, prefix, next_hop_ip, metric, local_pref,
+                          weight, as_path, origin, DEFAULT_ASN)
+
+    def list_of_peers(self):
         next_hops = []
         for k, v in AutonomousSystem.dict_of_all.items():
             for route in v.ipv4_prefixes:
@@ -61,15 +66,16 @@ class Manager(object):
 
     def print_details(self):
         print()
-        for peer in self._list_of_peers():
+        for peer in self.list_of_peers():
             if (peer and (int(peer) < 64512 or int(peer) > 65534)):
-                print(peer, subprocess.getoutput('dig +short AS' + peer + '.asn.cymru.com TXT').split('|')[-1])
+                dns_query = 'dig +short AS' + peer + '.asn.cymru.com TXT'
+                print(peer, subprocess.getoutput(dns_query).split('|')[-1])
             else:
                 pass
         print()
         print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
-        print('Peer Networks:', len(self._list_of_peers()))
+        print('Peer Networks:', len(self.list_of_peers()))
 
 
 def main(args):
