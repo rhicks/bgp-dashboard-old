@@ -64,6 +64,11 @@ class Manager(object):
                 next_hops.append(route.next_hop_asn)
         return set(next_hops)
 
+    def find_prefixes(self, asn):
+        prefixes = self.find_asn(asn).ipv4_prefixes
+        count = len(prefixes)
+        return prefixes, count
+
     def print_details(self):
         print()
         for peer in self.list_of_peers():
@@ -77,6 +82,19 @@ class Manager(object):
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
         print('Peer Networks:', len(self.list_of_peers()))
 
+    def print_asn_details(self, asn):
+        print()
+        if asn in self.list_of_peers():
+            print("{0} is a peer".format(asn))
+            prefixes, count = self.find_prefixes(asn)
+            print("Destination prefixes: {0}".format(count))
+            # print("Received prefixes: {0}".format(receieved_prefixes))
+            # print("all prefixes advertised via peering: {bool}")
+            for prefix in prefixes:
+                print(prefix)
+        else:
+            print("{0} is not a peer".format(asn))
+
 
 def main(args):
     if args['<filename>']:
@@ -84,7 +102,11 @@ def main(args):
             filename = args['<filename>']
             manager = Manager(filename)
             manager.build_autonomous_systems()
-            manager.print_details()
+            if args['<asn>']:
+                asn = args['<asn>']
+                manager.print_asn_details(asn)
+            else:
+                manager.print_details()
         except(FileNotFoundError):
             print("\nFile not found: {0}".format(filename), file=sys.stderr)
 

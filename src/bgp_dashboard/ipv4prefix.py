@@ -16,6 +16,9 @@ class IPv4Prefix(object):
     def __str__(self):
         return str(self.__dict__)
 
+    def __repr__(self):
+        return str(self.__dict__)
+
     @staticmethod
     def get_count():
         return IPv4Prefix.count
