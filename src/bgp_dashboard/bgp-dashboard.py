@@ -3,7 +3,8 @@
 """BGP Dashboard CLI Interface
 
 Usage:
-  bgp-dashboard.py <asn> -f <filename>
+  bgp-dashboard.py --asn <asn> -f <filename>
+  bgp-dashboard.py --peers -f <filename>
   bgp-dashboard.py --version
 
 Options:
@@ -21,6 +22,7 @@ from ipv4prefix import IPv4Prefix
 from docopt import docopt
 import sys
 import subprocess
+import json
 
 DEFAULT_ASN = '3701'
 # DEFAULT_FILENAME = 'bgp-data.txt'
@@ -83,17 +85,26 @@ class Manager(object):
         print('Peer Networks:', len(self.list_of_peers()))
 
     def print_asn_details(self, asn):
+        results = {}
         print()
         if asn in self.list_of_peers():
-            print("{0} is a peer".format(asn))
+            dns_query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
+            name = subprocess.getoutput(dns_query).split('|')[-1].split(",", 2)[0]
+            results['Autonomous System'] = {}
+            results['Autonomous System']['asn'] = asn
+            results['Autonomous System']['name'] = name.lstrip().rstrip()
+            results['Autonomous System']['peer'] = True
             prefixes, count = self.find_prefixes(asn)
-            print("Destination prefixes: {0}".format(count))
-            # print("Received prefixes: {0}".format(receieved_prefixes))
-            # print("all prefixes advertised via peering: {bool}")
+            received_prefixes = []
+            results['Autonomous System']['prefixes originated'] = count
             for prefix in prefixes:
-                print(prefix)
+                if prefix.as_path[0] == asn:
+                    received_prefixes.append(prefix)
+            results['Autonomous System']['prefixes received from peering'] = len(received_prefixes)
+            results['Autonomous System']['prefixes'] = sorted(list({line.prefix for line in received_prefixes}), key=lambda x: int(x.split('.')[0]))
+            print(json.dumps(results, indent=4, sort_keys=True))
         else:
-            print("{0} is not a peer".format(asn))
+            print('{0} is not a peer'.format(asn))
 
 
 def main(args):
@@ -105,7 +116,7 @@ def main(args):
             if args['<asn>']:
                 asn = args['<asn>']
                 manager.print_asn_details(asn)
-            else:
+            elif args['--peers']:
                 manager.print_details()
         except(FileNotFoundError):
             print("\nFile not found: {0}".format(filename), file=sys.stderr)
@@ -113,7 +124,7 @@ def main(args):
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='BGP Dashboard  0.0.1')
-    print(arguments)
+    # print(arguments)
     try:
         sys.exit(main(arguments))
     except(KeyboardInterrupt):
