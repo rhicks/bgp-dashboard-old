@@ -37,6 +37,9 @@ class Manager(object):
                     self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
                 else:
                     self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+            else:
+                # these a "local" asn next hops. do something with them.
+                pass
 
     def create_new_asn(self, asn):
         return AutonomousSystem(asn)
@@ -69,6 +72,7 @@ class Manager(object):
         return prefixes, count
 
     def _dns_query(self, asn):
+        # migrate away from a system call
         query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
         return subprocess.getoutput(query).split('|')[-1].split(",", 2)[0].strip()
 
@@ -86,6 +90,7 @@ class Manager(object):
                 pass
         print(json.dumps(results, indent=4))
         print()
+        # move this to a --stats specific arg
         print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
         print('Peer Networks:', len(self.list_of_peers()))
@@ -113,4 +118,5 @@ class Manager(object):
             results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
             print(json.dumps(results, indent=4, sort_keys=True))
         else:
+            # Add non peer asn stats here
             print('{0} is not a peer'.format(asn))
