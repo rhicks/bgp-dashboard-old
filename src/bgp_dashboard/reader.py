@@ -49,7 +49,9 @@ class FileReaderIPv4(object):
         good_prefix = None
         for line in data:
             status = line[0:3]  # slice for status
-            route = line[4:]  # remove the status info from the line
+            route = line[3:]  # remove the status info from the line
+            if not '>' in status:
+                route = route.lstrip()
             prefix = route.split(' ', 1)[0]
             if not prefix:
                 return(status.lstrip().rstrip() +
@@ -67,17 +69,14 @@ class FileReaderIPv4(object):
         # the output.  But first we remove the variable length fields from the
         # line (status, network).
         status = line[0:3]  # slice for status
-        line = line[4:]  # remove the route status info from the line
+        line = line[3:]  # remove the route status info from the line
         network = line.split(None, 1)[0]  # first split item for network
         nexthop = line.split(None, 2)[1]  # second split item for nexthop
-        # remove the network from the line
-        end_of_line = line.split(None, 1)[1]
+        end_of_line = line.split(None, 1)[1] # remove the network from the line
         metric = end_of_line[18:26]  # slice for metric
         local_pref = end_of_line[27:33]  # slice for local_pref
         weight = end_of_line[34:40]  # slice for weight
-        # slice for as_path (41 to end of the line -1)A
-        as_path = end_of_line[41:-1]
-        # aspath = [map(int, x) for x in tuple(as_path.split())]
+        as_path = end_of_line[41:-1] # slice for as_path (41 to end of the line -1)
         origin = end_of_line[-1]  # slice for origin (-1 is last itemA
         as_path = re.sub(r'\{[^)]*\}', '', as_path) # remove AS-SET info from as_path
         return (status.strip(),

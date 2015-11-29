@@ -62,7 +62,7 @@ class Manager(object):
 
     def print_details(self):
         print()
-        for peer in self.list_of_peers():
+        for peer in sorted(list(filter(None.__ne__, self.list_of_peers())), key=lambda x: int(x)):
             if (peer and (int(peer) < 64512 or int(peer) > 65534)):
                 print(peer, self._dns_query(peer))
             else:
