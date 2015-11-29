@@ -27,10 +27,16 @@ class Manager(object):
                 sys.stdout.flush()
             prefix = self.create_prefix(line)
             asn = prefix.destination_asn
+            next_hop = prefix.next_hop_asn
             if asn not in AutonomousSystem.dict_of_all:
                 self.create_new_asn(asn).ipv4_prefixes.append(prefix)
             else:
                 self.find_asn(asn).ipv4_prefixes.append(prefix)
+            if next_hop:
+                if next_hop not in AutonomousSystem.dict_of_all:
+                    self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+                else:
+                    self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
 
     def create_new_asn(self, asn):
         return AutonomousSystem(asn)
@@ -57,6 +63,11 @@ class Manager(object):
         return sorted(list({line.prefix for line in ip_list}),
                       key=lambda x: socket.inet_aton(x.split("/")[0]))
 
+    def find_next_hop_prefixes(self, asn):
+        prefixes = self.find_asn(asn).ipv4_next_hop_prefixes
+        count = len(prefixes)
+        return prefixes, count
+
     def _dns_query(self, asn):
         query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
         return subprocess.getoutput(query).split('|')[-1].split(",", 2)[0].strip()
@@ -67,9 +78,10 @@ class Manager(object):
         print()
         for peer in sorted(list(filter(None.__ne__, self.list_of_peers())), key=lambda x: int(x)):
             if (peer and (int(peer) < 64512 or int(peer) > 65534)):
-                results['peers'][peer] = {}
+                results['peers'][peer] = OrderedDict()
                 results['peers'][peer]['name'] = self._dns_query(peer)
                 results['peers'][peer]['prefixes originated'] = self.find_prefixes(peer)[1]
+                results['peers'][peer]['prefixes advertised'] = self.find_next_hop_prefixes(peer)[1]
             else:
                 pass
         print(json.dumps(results, indent=4))

@@ -6,6 +6,7 @@ class AutonomousSystem(object):
 
     def __init__(self, asn):
         self._ipv4_prefixes = []
+        self._ipv4_next_hop_prefixes = []
         self.asn = asn
         AutonomousSystem.dict_of_all[self.asn] = self
 
@@ -28,8 +29,11 @@ class AutonomousSystem(object):
 
     @property
     def ipv4_prefixes(self):
-#        print('CALLING IPV4 PREFIX GETTER')
         return self._ipv4_prefixes
+
+    @property
+    def ipv4_next_hop_prefixes(self):
+        return self._ipv4_next_hop_prefixes
 
     # @ipv4_prefixes.setter
     # def ipv4_prefixes(self, ipv4_prefix):
