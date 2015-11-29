@@ -2,6 +2,7 @@
 from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
+from collections import OrderedDict
 import sys
 import subprocess
 import json
@@ -61,12 +62,17 @@ class Manager(object):
         return subprocess.getoutput(query).split('|')[-1].split(",", 2)[0].strip()
 
     def print_details(self):
+        results = OrderedDict()
+        results['peers'] = OrderedDict()
         print()
         for peer in sorted(list(filter(None.__ne__, self.list_of_peers())), key=lambda x: int(x)):
             if (peer and (int(peer) < 64512 or int(peer) > 65534)):
-                print(peer, self._dns_query(peer))
+                results['peers'][peer] = {}
+                results['peers'][peer]['name'] = self._dns_query(peer)
+                results['peers'][peer]['prefixes originated'] = self.find_prefixes(peer)[1]
             else:
                 pass
+        print(json.dumps(results, indent=4))
         print()
         print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
