@@ -38,7 +38,7 @@ class Manager(object):
                 else:
                     self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
             else:
-                # these a "local" asn next hops. do something with them.
+                # these are "local" asn next hops. do something with them.
                 pass
 
     def create_new_asn(self, asn):
@@ -118,5 +118,15 @@ class Manager(object):
             results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
             print(json.dumps(results, indent=4, sort_keys=True))
         else:
-            # Add non peer asn stats here
-            print('{0} is not a peer'.format(asn))
+            name = self._dns_query(asn)
+            results['asn'] = asn
+            results['name'] = name
+            results['peer'] = False
+            prefixes, count = self.find_prefixes(asn)
+            received_prefixes_other = []
+            results['prefix count originated'] = count
+            for prefix in prefixes:
+                received_prefixes_other.append(prefix)
+            results['prefix count received other'] = len(received_prefixes_other)
+            results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
+            print(json.dumps(results, indent=4, sort_keys=True))
