@@ -71,10 +71,22 @@ class Manager(object):
         count = len(prefixes)
         return prefixes, count
 
+    def _next_hop_asns(self, asn):
+        next_hops = []
+        for prefix in self.find_prefixes(asn)[0]:
+            next_hops.append(prefix.next_hop_asn)
+        return list(set(next_hops))
+
     def _dns_query(self, asn):
         # migrate away from a system call
         query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
         return subprocess.getoutput(query).split('|')[-1].split(",", 2)[0].strip()
+
+    def print_stats(self):
+        print()
+        print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
+        print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
+        print('Peer Networks:', len(self.list_of_peers()))
 
     def print_details(self):
         results = OrderedDict()
@@ -85,48 +97,49 @@ class Manager(object):
                 results['peers'][peer] = OrderedDict()
                 results['peers'][peer]['name'] = self._dns_query(peer)
                 results['peers'][peer]['prefixes originated'] = self.find_prefixes(peer)[1]
-                results['peers'][peer]['prefixes advertised'] = self.find_next_hop_prefixes(peer)[1]
+                results['peers'][peer]['routes selected'] = self.find_next_hop_prefixes(peer)[1]
             else:
                 pass
         print(json.dumps(results, indent=4))
-        print()
-        # move this to a --stats specific arg
-        print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
-        print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
-        print('Peer Networks:', len(self.list_of_peers()))
+
 
     def print_asn_details(self, asn):
-        results = {}
-        print()
-        if asn in self.list_of_peers():
-            name = self._dns_query(asn)
-            results['asn'] = asn
-            results['name'] = name
-            results['peer'] = True
-            prefixes, count = self.find_prefixes(asn)
-            received_prefixes_peering = []
-            received_prefixes_other = []
-            results['prefix count originated'] = count
-            for prefix in prefixes:
-                if prefix.as_path[0] == asn:
-                    received_prefixes_peering.append(prefix)
-                else:
+        if self.find_asn(asn):
+            results = OrderedDict()
+            print()
+            if asn in self.list_of_peers():
+                name = self._dns_query(asn)
+                results['asn'] = asn
+                results['name'] = name
+                results['peer'] = True
+                prefixes, count = self.find_prefixes(asn)
+                received_prefixes_peering = []
+                received_prefixes_other = []
+                results['prefix count originated'] = count
+                for prefix in prefixes:
+                    if prefix.as_path[0] == asn:
+                        received_prefixes_peering.append(prefix)
+                    else:
+                        received_prefixes_other.append(prefix)
+                results['prefix count received peering'] = len(received_prefixes_peering)
+                results['prefix count received other'] = len(received_prefixes_other)
+                results['prefixes peering'] = self._sorted_ip_list(received_prefixes_peering)
+                results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
+                results['next hop asn list'] = self._next_hop_asns(asn)
+                print(json.dumps(results, indent=4))
+            else:
+                name = self._dns_query(asn)
+                results['asn'] = asn
+                results['name'] = name
+                results['peer'] = False
+                prefixes, count = self.find_prefixes(asn)
+                received_prefixes_other = []
+                results['prefixes originated'] = count
+                for prefix in prefixes:
                     received_prefixes_other.append(prefix)
-            results['prefix count received peering'] = len(received_prefixes_peering)
-            results['prefix count received other'] = len(received_prefixes_other)
-            results['prefixes peering'] = self._sorted_ip_list(received_prefixes_peering)
-            results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
-            print(json.dumps(results, indent=4, sort_keys=True))
+                results['prefix list'] = self._sorted_ip_list(received_prefixes_other)
+                results['next hop asn list'] = self._next_hop_asns(asn)
+                print(json.dumps(results, indent=4))
         else:
-            name = self._dns_query(asn)
-            results['asn'] = asn
-            results['name'] = name
-            results['peer'] = False
-            prefixes, count = self.find_prefixes(asn)
-            received_prefixes_other = []
-            results['prefix count originated'] = count
-            for prefix in prefixes:
-                received_prefixes_other.append(prefix)
-            results['prefix count received other'] = len(received_prefixes_other)
-            results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
-            print(json.dumps(results, indent=4, sort_keys=True))
+            print()
+            print("ASN %s not found" % asn)
