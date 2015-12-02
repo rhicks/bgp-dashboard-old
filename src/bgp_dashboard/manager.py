@@ -38,7 +38,6 @@ class Manager(object):
                 else:
                     self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
             else:
-                # these are "local" asn next hops. do something with them.
                 pass
 
     def create_new_asn(self, asn):
@@ -88,7 +87,7 @@ class Manager(object):
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
         print('Peer Networks:', len(self.list_of_peers()))
 
-    def print_details(self):
+    def print_details(self, show_routes):
         results = OrderedDict()
         results['peers'] = OrderedDict()
         print()
@@ -103,7 +102,7 @@ class Manager(object):
         print(json.dumps(results, indent=4))
 
 
-    def print_asn_details(self, asn):
+    def print_asn_details(self, asn, show_routes):
         if self.find_asn(asn):
             results = OrderedDict()
             print()
@@ -115,16 +114,17 @@ class Manager(object):
                 prefixes, count = self.find_prefixes(asn)
                 received_prefixes_peering = []
                 received_prefixes_other = []
-                results['prefix count originated'] = count
+                results['prefixes originated'] = count
                 for prefix in prefixes:
                     if prefix.as_path[0] == asn:
                         received_prefixes_peering.append(prefix)
                     else:
                         received_prefixes_other.append(prefix)
-                results['prefix count received peering'] = len(received_prefixes_peering)
-                results['prefix count received other'] = len(received_prefixes_other)
-                results['prefixes peering'] = self._sorted_ip_list(received_prefixes_peering)
-                results['prefixes other'] = self._sorted_ip_list(received_prefixes_other)
+                results['direct routes to peer'] = len(received_prefixes_peering)
+                results['indirect routes to peer '] = len(received_prefixes_other)
+                if show_routes:
+                    results['direct route prefixes'] = self._sorted_ip_list(received_prefixes_peering)
+                    results['indirect route prefixes'] = self._sorted_ip_list(received_prefixes_other)
                 results['next hop asn list'] = self._next_hop_asns(asn)
                 print(json.dumps(results, indent=4))
             else:
@@ -137,7 +137,8 @@ class Manager(object):
                 results['prefixes originated'] = count
                 for prefix in prefixes:
                     received_prefixes_other.append(prefix)
-                results['prefix list'] = self._sorted_ip_list(received_prefixes_other)
+                if show_routes:
+                    results['prefix list'] = self._sorted_ip_list(received_prefixes_other)
                 results['next hop asn list'] = self._next_hop_asns(asn)
                 print(json.dumps(results, indent=4))
         else:

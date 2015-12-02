@@ -3,9 +3,9 @@
 """BGP Dashboard CLI Interface
 
 Usage:
-  bgp-dashboard.py --asn <asn> -f <filename>
-  bgp-dashboard.py --peers -f <filename>
-  bgp-dashboard.py --stats -f <filename>
+  bgp-dashboard.py -f <filename> --asn <asn> [--routes]
+  bgp-dashboard.py -f <filename> --peers [--routes]
+  bgp-dashboard.py -f <filename> --stats
   bgp-dashboard.py --version
 
 Options:
@@ -13,6 +13,7 @@ Options:
   -f            File Name where "show ip bgp" data is located
   --asn         Get ASN details
   --peers       List of all directly connected BGP peers
+  --routes      Show optional route details
   --stats       BGP routing stats
   --version     Show version.
 
@@ -31,9 +32,11 @@ def main(args):
             manager.build_autonomous_systems()
             if args['<asn>']:
                 asn = args['<asn>']
-                manager.print_asn_details(asn)
+                show_routes = args['--routes']
+                manager.print_asn_details(asn, show_routes)
             elif args['--peers']:
-                manager.print_details()
+                show_routes = args['--routes']
+                manager.print_details(show_routes)
             elif args['--stats']:
                 manager.print_stats()
         except(FileNotFoundError):
