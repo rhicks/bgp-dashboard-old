@@ -112,6 +112,7 @@ class Manager(object):
                 results['name'] = name
                 results['peer'] = True
                 prefixes, count = self.find_prefixes(asn)
+                all_next_hop_prefixes, count_next_hop_prefixes = self.find_next_hop_prefixes(asn)
                 received_prefixes_peering = []
                 received_prefixes_other = []
                 results['prefixes originated'] = count
@@ -120,11 +121,13 @@ class Manager(object):
                         received_prefixes_peering.append(prefix)
                     else:
                         received_prefixes_other.append(prefix)
-                results['direct routes to peer'] = len(received_prefixes_peering)
-                results['indirect routes to peer '] = len(received_prefixes_other)
+                results['prefixes originated by this asn that use the direct peering as a next hop'] = len(received_prefixes_peering)
+                results['prefixes originated by this asn that do use the direct peering'] = len(received_prefixes_other)
+                results['all prefixes using this asn as next hop'] = count_next_hop_prefixes
                 if show_routes:
-                    results['direct route prefixes'] = self._sorted_ip_list(received_prefixes_peering)
-                    results['indirect route prefixes'] = self._sorted_ip_list(received_prefixes_other)
+                    results['direct peering prefixes'] = self._sorted_ip_list(received_prefixes_peering)
+                    results['non-peering prefixes'] = self._sorted_ip_list(received_prefixes_other)
+                    results['all prefixes using this asn as transit'] = self._sorted_ip_list(all_next_hop_prefixes)
                 results['next hop asn list'] = self._next_hop_asns(asn)
                 print(json.dumps(results, indent=4))
             else:
