@@ -34,8 +34,3 @@ class AutonomousSystem(object):
     @property
     def ipv4_next_hop_prefixes(self):
         return self._ipv4_next_hop_prefixes
-
-    # @ipv4_prefixes.setter
-    # def ipv4_prefixes(self, ipv4_prefix):
-    #     print('CALLING IPV4 PREFIX SETTER')
-    #     self._ipv4_prefixes.append(ipv4_prefix)
