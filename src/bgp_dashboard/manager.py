@@ -3,6 +3,7 @@ from reader import FileReaderIPv4
 from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
 from collections import OrderedDict
+from collections import Counter
 import sys
 import subprocess
 import json
@@ -76,6 +77,13 @@ class Manager(object):
             next_hops.append(prefix.next_hop_asn)
         return list(set(next_hops))
 
+    def _next_hop_ips(self, prefix_list):
+        next_hop_ips = []
+        for prefix in prefix_list:
+            next_hop_ips.append(prefix.next_hop_ip)
+        c = Counter(next_hop_ips)
+        return c, len(c)
+
     def _dns_query(self, asn):
         # migrate away from a system call
         query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
@@ -97,6 +105,9 @@ class Manager(object):
                 results['peers'][peer]['name'] = self._dns_query(peer)
                 results['peers'][peer]['prefixes originated'] = self.find_prefixes(peer)[1]
                 results['peers'][peer]['routes selected'] = self.find_next_hop_prefixes(peer)[1]
+                all_next_hop_prefixes, count_next_hop_prefixes = self.find_next_hop_prefixes(peer)
+                results['peers'][peer]['peering connections'] = self._next_hop_ips(all_next_hop_prefixes)[1]
+                results['peers'][peer]['peering connection ip list route count'] = self._next_hop_ips(all_next_hop_prefixes)[0]
             else:
                 pass
         print(json.dumps(results, indent=4))
@@ -121,6 +132,8 @@ class Manager(object):
                         received_prefixes_peering.append(prefix)
                     else:
                         received_prefixes_other.append(prefix)
+                results['peering connections'] = self._next_hop_ips(all_next_hop_prefixes)[1]
+                results['peering connection ip list route count'] = self._next_hop_ips(all_next_hop_prefixes)[0]
                 results['prefixes originated by this asn that use the direct peering as a next hop'] = len(received_prefixes_peering)
                 results['prefixes originated by this asn that do use the direct peering'] = len(received_prefixes_other)
                 results['all prefixes using this asn as next hop'] = count_next_hop_prefixes
