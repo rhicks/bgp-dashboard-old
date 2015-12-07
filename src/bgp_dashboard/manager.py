@@ -8,6 +8,7 @@ import sys
 import subprocess
 import json
 import socket
+import dns.resolver
 
 DEFAULT_ASN = '3701'
 # DEFAULT_FILENAME = 'bgp-data.txt'
@@ -85,9 +86,13 @@ class Manager(object):
         return c, len(c)
 
     def _dns_query(self, asn):
-        # migrate away from a system call
-        query = 'dig +short AS' + asn + '.asn.cymru.com TXT'
-        return subprocess.getoutput(query).split('|')[-1].split(",", 2)[0].strip()
+        query = 'AS' + asn + '.asn.cymru.com'
+        answers = dns.resolver.query(query, 'TXT')
+        for rdata in answers:
+            for txt_string in rdata.strings:
+                return txt_string.split('|')[-1].split(",", 2)[0].strip()
+
+
 
     def print_stats(self):
         print()
