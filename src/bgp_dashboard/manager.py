@@ -92,8 +92,6 @@ class Manager(object):
             for txt_string in rdata.strings:
                 return txt_string.split('|')[-1].split(",", 2)[0].strip()
 
-
-
     def print_stats(self):
         print()
         print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
@@ -116,7 +114,6 @@ class Manager(object):
             else:
                 pass
         print(json.dumps(results, indent=4))
-
 
     def print_asn_details(self, asn, show_routes):
         if self.find_asn(asn):

@@ -24,6 +24,7 @@ from manager import Manager
 from docopt import docopt
 import sys
 
+
 def main(args):
     if args['<filename>']:
         try:
