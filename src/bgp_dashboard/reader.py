@@ -1,7 +1,6 @@
 import re
 
-
-class FileReaderIPv4(object):
+class FileReader(object):
     '''Read 'show ip bgp' data from a text file and return a tuple to be processed
         Example Return:
         ('*>i', '223.252.192.0/19', '4.53.200.1', '0', '1000', '0', ('3356', '1239', '4837', '45062'), 'i')
@@ -10,8 +9,13 @@ class FileReaderIPv4(object):
 
     def __init__(self, filename):
         self.filename = filename
-        self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
         self._garbage_lines = []
+        self.unknown_data = True
+        self.ipv4_data = False
+        self.ipv6_data = False
+        self.ipv4_regex = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+        self.ipv6_regex = re.compile('^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)$')
+
 
     def _line_is_not_garbage(self, line):
         valid_starts = ('*', 'r i', 'r>i')
@@ -23,7 +27,7 @@ class FileReaderIPv4(object):
         if line.startswith('0.0.0.0'):
             self._garbage_lines.append(line)
             return False
-        if self.ipv4_regex.match(line.split()[0]):
+        if self.ipv4_regex.match(line.split()[0]) or self.ipv6_regex.match(line.split()[0]):
             return True
         else:
             self._garbage_lines.append(line)
@@ -88,24 +92,51 @@ class FileReaderIPv4(object):
                 tuple(as_path.split()),
                 origin.strip())
 
+    def _determine_data_type(self, line):
+        for field in line.split():
+            if self.ipv4_regex.match(field):
+                self.unknown_data = False
+                self.ipv4_data = True
+            if self.ipv6_regex.match(field):
+                self.unknown_data = False
+                self.ipv6_data = True
+
+
     def get_data(self):
         lines = []
         with open(self.filename, 'r') as data_file:
             for line in data_file:
                 line = line.lstrip().rstrip()
-                if self._line_is_not_garbage(line):
+                if self._line_is_multiline(line):
+                    line = line + '  ' + data_file.readline().lstrip().rstrip()
                     if self._line_is_multiline(line):
                         line = line + '  ' + data_file.readline().lstrip().rstrip()
-                    if self._line_contains_the_network_prefix(line):
-                        lines.append(line)
-                        if self._line_is_the_best_route(line):
-                            lines = []
-                            yield (self._split_line_into_route_fields(line))
-                    else:
-                        if self._line_is_the_best_route(line) and len(lines) > 0:
+                        # print(line)
+                if self._line_is_not_garbage(line):
+                    if self.unknown_data:
+                        self._determine_data_type(line)
+                    if self.ipv4_data:
+                        if self._line_contains_the_network_prefix(line):
                             lines.append(line)
-                            yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)))
-                            lines = []
+                            if self._line_is_the_best_route(line):
+                                lines = []
+                                yield (self._split_line_into_route_fields(line), 4)
+                        else:
+                            if self._line_is_the_best_route(line) and len(lines) > 0:
+                                lines.append(line)
+                                yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)), 4)
+                                lines = []
+                    if self.ipv6_data:
+                        if self._line_contains_the_network_prefix(line):
+                            lines.append(line)
+                            if self._line_is_the_best_route(line):
+                                lines = []
+                                yield (self._split_line_into_route_fields(line), 6)
+                        else:
+                            if self._line_is_the_best_route(line) and len(lines) > 0:
+                                lines.append(line)
+                                yield(self._split_line_into_route_fields(self._combine_best_route_and_network_prefix(lines)), 6)
+                                lines = []
 
     def get_ignored_lines(self):
         if len(self._garbage_lines) > 0:

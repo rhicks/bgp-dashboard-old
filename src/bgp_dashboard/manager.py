@@ -1,5 +1,5 @@
 
-from reader import FileReaderIPv4
+from reader import FileReader
 from autonomoussystem import AutonomousSystem
 from ipv4prefix import IPv4Prefix
 from collections import OrderedDict
@@ -18,29 +18,36 @@ class Manager(object):
     '''Program manager'''
 
     def __init__(self, filename):
-        self.filename = FileReaderIPv4(filename)
+        self.filename = FileReader(filename)
 
     def build_autonomous_systems(self):
         print('Processing data:', end='')
         data = self.filename.get_data()
-        for line in data:
-            if IPv4Prefix.get_count() % 10000 == 0:
-                print('.', end='')
-                sys.stdout.flush()
-            prefix = self.create_prefix(line)
-            asn = prefix.destination_asn
-            next_hop = prefix.next_hop_asn
-            if asn not in AutonomousSystem.dict_of_all:
-                self.create_new_asn(asn).ipv4_prefixes.append(prefix)
-            else:
-                self.find_asn(asn).ipv4_prefixes.append(prefix)
-            if next_hop:
-                if next_hop not in AutonomousSystem.dict_of_all:
-                    self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+        for info in data:
+            line, ip_version = info
+            if ip_version == 4:
+                if IPv4Prefix.get_count() % 10000 == 0:
+                    print('.', end='')
+                    sys.stdout.flush()
+                # print(list(line))
+                prefix = self.create_prefix(line)
+                # print(prefix)
+                asn = prefix.destination_asn
+                next_hop = prefix.next_hop_asn
+                if asn not in AutonomousSystem.dict_of_all:
+                    self.create_new_asn(asn).ipv4_prefixes.append(prefix)
                 else:
-                    self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
-            else:
-                pass
+                    self.find_asn(asn).ipv4_prefixes.append(prefix)
+                if next_hop:
+                    if next_hop not in AutonomousSystem.dict_of_all:
+                        self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+                    else:
+                        self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+                else:
+                    pass
+            if ip_version == 6:
+                print("YO, YO, ITS IPV6!!!")
+                print(line)
 
     def create_new_asn(self, asn):
         return AutonomousSystem(asn)
@@ -162,3 +169,6 @@ class Manager(object):
         else:
             print()
             print("ASN %s not found" % asn)
+            print("Ignored Lines:")
+            for line in self.filename.get_ignored_lines():
+                print(line)
