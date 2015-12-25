@@ -5,3 +5,4 @@ ipv6-full*
 *.txt
 .coverage
 .cache/
+.DS_Store
