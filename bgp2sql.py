@@ -136,6 +136,8 @@ def build_full_prefix(status, prefix, line, ip_version):
     if as_path:
         origin_asn = as_path[-1]
         next_hop_asn = as_path[0]
+        if '{' in origin_asn:
+            origin_asn = as_path[-2] # ignore atomic aggregates as destination
     else:
         origin_asn = default_asn
         next_hop_asn = None
