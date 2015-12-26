@@ -76,7 +76,7 @@ def build_full_prefix(status, prefix, line, ip_version):
     metric       = line[metric_splice].strip()
     local_pref   = line[localpref_splice].strip()
     weight       = line[weight_splice].strip()
-    as_path      = tuple(line[aspath_splice].split())
+    as_path      = list(line[aspath_splice].split())
     route_origin = line[-1].strip()
     return(status, prefix, next_hop_ip, metric, local_pref, weight, as_path, route_origin)
 
@@ -101,29 +101,28 @@ def parse_ipv4_data(line, data_file):
     ip_version = 4
     status_slice = slice(0,5)
     strip_status = slice(4,None)
-    if ipv4_regex.match(line[strip_status].split(' ')[1]):
-        prefix = line[strip_status].split(' ')[1].strip()
-        while not '>' in line[status_slice]:
-            line = data_file.readline().strip()
-        status = line[status_slice].strip()
-        line = line[5:]
-        if len(line.split()) == 1:
-            line = data_file.readline()
-        if (line.split()[0] == prefix):
-            line = line.split(' ', 1)[1].strip()
-        else:
-            line = line.strip()
-        return(build_full_prefix(status, prefix, line, ip_version))
+    prefix = line[strip_status].split(' ')[1].strip()
+    while not '>' in line[status_slice]:
+        line = data_file.readline().strip()
+    status = line[status_slice].strip()
+    line = line[5:]
+    if len(line.split()) == 1:
+        line = data_file.readline()
+    if (line.split()[0] == prefix):
+        line = line.split(' ', 1)[1].strip()
     else:
-        pass # this is returning None.  Need to fix.
+        line = line.strip()
+    return(build_full_prefix(status, prefix, line, ip_version))
+
 
 def get_data(filename):
     ignored_lines = []
+    strip_status = slice(4,None)
     with open(filename) as data_file:
         for line in data_file:
             if '::/' in line: # its ipv6
                 yield(parse_ipv6_data(line, data_file))
-            if ipv4_data(line): # its ipv4
+            if ipv4_data(line) and ipv4_data(line[strip_status].split(' ')[1]):
                 yield(parse_ipv4_data(line, data_file))
             else: # its crap
                 ignored_lines.append(line)
