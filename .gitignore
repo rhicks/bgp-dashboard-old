@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
 bgp-data-full*
+ipv6-full*
 .coverage
 .cache/

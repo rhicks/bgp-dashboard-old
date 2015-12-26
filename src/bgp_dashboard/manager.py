@@ -1,7 +1,7 @@
 
 from reader import FileReader
 from autonomoussystem import AutonomousSystem
-from ipv4prefix import IPv4Prefix
+from prefix import Prefix
 from collections import OrderedDict
 from collections import Counter
 import sys
@@ -9,6 +9,7 @@ import subprocess
 import json
 import socket
 import dns.resolver
+import re
 
 DEFAULT_ASN = '3701'
 # DEFAULT_FILENAME = 'bgp-data.txt'
@@ -23,31 +24,24 @@ class Manager(object):
     def build_autonomous_systems(self):
         print('Processing data:', end='')
         data = self.filename.get_data()
-        for info in data:
-            line, ip_version = info
-            if ip_version == 4:
-                if IPv4Prefix.get_count() % 10000 == 0:
-                    print('.', end='')
-                    sys.stdout.flush()
-                # print(list(line))
-                prefix = self.create_prefix(line)
-                # print(prefix)
-                asn = prefix.destination_asn
-                next_hop = prefix.next_hop_asn
-                if asn not in AutonomousSystem.dict_of_all:
-                    self.create_new_asn(asn).ipv4_prefixes.append(prefix)
+        for line in data:
+            if Prefix.get_count() % 10000 == 0:
+                print('.', end='')
+            sys.stdout.flush()
+            prefix = self.create_prefix(line)
+            asn = prefix.origin_asn
+            next_hop = prefix.next_hop_asn
+            if asn not in AutonomousSystem.dict_of_all:
+                self.create_new_asn(asn).ipv4_prefixes.append(prefix)
+            else:
+                self.find_asn(asn).ipv4_prefixes.append(prefix)
+            if next_hop:
+                if next_hop not in AutonomousSystem.dict_of_all:
+                    self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
                 else:
-                    self.find_asn(asn).ipv4_prefixes.append(prefix)
-                if next_hop:
-                    if next_hop not in AutonomousSystem.dict_of_all:
-                        self.create_new_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
-                    else:
-                        self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
-                else:
-                    pass
-            if ip_version == 6:
-                print("YO, YO, ITS IPV6!!!")
-                print(line)
+                    self.find_asn(next_hop).ipv4_next_hop_prefixes.append(prefix)
+            else:
+                pass
 
     def create_new_asn(self, asn):
         return AutonomousSystem(asn)
@@ -56,7 +50,7 @@ class Manager(object):
         return AutonomousSystem.dict_of_all.get(asn)
 
     def create_prefix(self, line):
-        return IPv4Prefix(*line, default_asn=DEFAULT_ASN)
+        return Prefix(*line)
 
     def list_of_peers(self):
         next_hops = []
@@ -71,8 +65,12 @@ class Manager(object):
         return prefixes, count
 
     def _sorted_ip_list(self, ip_list):
-        return sorted(list({line.prefix for line in ip_list}),
-                      key=lambda x: socket.inet_aton(x.split("/")[0]))
+        mylist = list()
+        for line in ip_list:
+            mylist.append(line.prefix)
+        return(mylist)
+        #return sorted(list({line.prefix for line in ip_list}), key=lambda x: socket.inet_aton(x.split("/")[0]))
+
 
     def find_next_hop_prefixes(self, asn):
         prefixes = self.find_asn(asn).ipv4_next_hop_prefixes
@@ -101,11 +99,11 @@ class Manager(object):
 
     def print_stats(self):
         print()
-        print('IPv4 Routing Table Size:', IPv4Prefix.get_count())
+        print('IPv4 Routing Table Size:', Prefix.get_count())
         print('Unique ASNs:', len(AutonomousSystem.dict_of_all))
         print('Peer Networks:', len(self.list_of_peers()))
 
-    def print_details(self, show_routes):
+    def print_details(self):
         results = OrderedDict()
         results['peers'] = OrderedDict()
         print()

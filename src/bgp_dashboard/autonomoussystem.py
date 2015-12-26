@@ -5,6 +5,8 @@ class AutonomousSystem(object):
     dict_of_all = {}
 
     def __init__(self, asn):
+        if asn == 3701:
+            print("Creating ASN:", asn)
         self._ipv4_prefixes = []
         self._ipv4_next_hop_prefixes = []
         self.asn = asn

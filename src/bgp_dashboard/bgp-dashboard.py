@@ -4,7 +4,7 @@
 
 Usage:
   bgp-dashboard.py -f <filename> --asn <asn> [--routes]
-  bgp-dashboard.py -f <filename> --peers [--routes]
+  bgp-dashboard.py -f <filename> --peers
   bgp-dashboard.py -f <filename> --stats
   bgp-dashboard.py --version
 
@@ -36,8 +36,7 @@ def main(args):
                 show_routes = args['--routes']
                 manager.print_asn_details(asn, show_routes)
             elif args['--peers']:
-                show_routes = args['--routes']
-                manager.print_details(show_routes)
+                manager.print_details()
             elif args['--stats']:
                 manager.print_stats()
         except(FileNotFoundError):
