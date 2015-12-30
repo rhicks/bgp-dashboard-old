@@ -20,6 +20,7 @@ import sqlite3
 from datetime import datetime
 import dns.resolver
 
+database_file = './bgp.db' # location of SQL database
 default_asn = 3701  # BGP ASN of the router where data was collected
 ipv4_regex  = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 
@@ -30,7 +31,7 @@ def main(args):
             filename = args['<filename>']
             data = get_data(filename)
             #create_database()
-            write_to_db(data, database='./bgp.db')
+            write_to_db(data, database_file)
         except(FileNotFoundError):
             print("\nFile not found: {0}".format(filename), file=sys.stderr)
 
