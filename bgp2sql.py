@@ -16,6 +16,9 @@ Options:
 from docopt import docopt
 import sys
 import re
+import sqlite3
+from datetime import datetime
+import dns.resolver
 
 default_asn = 3701  # BGP ASN of the router where data was collected
 ipv4_regex  = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -26,8 +29,8 @@ def main(args):
         try:
             filename = args['<filename>']
             data = get_data(filename)
-            for line in data:
-                print(line)
+            #create_database()
+            write_to_db(data, database='./bgp.db')
         except(FileNotFoundError):
             print("\nFile not found: {0}".format(filename), file=sys.stderr)
 
@@ -43,11 +46,41 @@ def get_data(filename):
             else:  # its crap
                 ignored_lines.append(line)
 
+def write_to_db(data, database):
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    # c.execute('delete from prefix')
+    # c.execute('delete from autonomous_system')
+    conn.commit()
+    for line in data:
+        status, prefix, next_hop_ip, metric, local_pref, weight, as_path, route_origin, origin_asn, next_hop_asn = line
+        c.execute('select asn from autonomous_system where asn = ?', (origin_asn,))
+        if c.fetchone():
+            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn)))
+        else:
+            c.execute('insert or ignore into autonomous_system values (?,?,?,?)', (origin_asn, asn_name_query(origin_asn), datetime.now(), datetime.now()))
+            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn)))
+    conn.commit()
+
+def asn_name_query(asn):
+    query = 'AS' + str(asn) + '.asn.cymru.com'
+    resolver = dns.resolver.Resolver()
+    resolver.timeout = 1
+    resolver.lifetime = 1
+    try:
+        answers = resolver.query(query, 'TXT')
+        for rdata in answers:
+            for txt_string in rdata.strings:
+                print(txt_string)
+                return txt_string.split('|')[-1].split(",", 2)[0].strip()
+    except:
+        print("None")
+        return("None")
 
 def parse_ipv6_data(line, data_file):
     ip_version = 6
-    status_slice = slice(0, 5)
-    strip_status = slice(5, None)
+    status_slice = slice(0, 4)
+    strip_status = slice(4, None)
     prefix = line[strip_status].split()[0]  # prefix is the first field
     while not '>' in line[status_slice]:  # find the "best" path
         line = data_file.readline()
