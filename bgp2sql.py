@@ -186,3 +186,30 @@ if __name__ == '__main__':
     except(KeyboardInterrupt):
         print("\nExiting on user request.\n", file=sys.stderr)
         sys.exit(1)
+
+# CREATE TABLE "autonomous_system" (
+#   `asn`   INTEGER NOT NULL UNIQUE,
+# 	`name`   VARCHAR(100),
+# 	`created_timestamp`	DATETIME,
+# 	`modified_timestamp`	DATETIME,
+# 	PRIMARY KEY(asn)
+# )
+
+# CREATE TABLE "prefix" (
+# 	`id`	INTEGER NOT NULL,
+# 	`status`	VARCHAR(64),
+# 	`prefix`	VARCHAR(128) UNIQUE,
+# 	`next_hop_ip`	VARCHAR(64),
+# 	`metric`	INTEGER,
+# 	`local_pref`	INTEGER,
+# 	`weight`	INTEGER,
+# 	`as_path`	TEXT,
+# 	`route_origin`	VARCHAR(64),
+# 	`origin_asn`	INTEGER,
+# 	`next_hop_asn`	INTEGER,
+# 	`created_timestamp`	DATETIME,
+# 	`modified_timestamp`	DATETIME,
+# 	`autonomoussystem_asn`	INTEGER,
+# 	PRIMARY KEY(id),
+# 	FOREIGN KEY(`autonomoussystem_asn`) REFERENCES `autonomous_system`(`asn`)
+# )
