@@ -3,11 +3,11 @@ from datetime import datetime
 from app import db
 
 class AutonomousSystem(db.Model):
-    asn = db.Column(db.Integer, primary_key=True)
+    asn = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String(100))
     created_timestamp = db.Column(db.DateTime, default=datetime.now)
     modified_timestamp = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-    prefixes = db.relationship('Prefix', backref='autonomous_system', lazy='dynamic')
+    prefixes = db.relationship('Prefix', backref='autonomous_system', lazy='joined')
 
     def __init__(self, *args, **kwargs):
         super(AutonomousSystem, self).__init__(*args, **kwargs)
@@ -37,7 +37,7 @@ class AutonomousSystem(db.Model):
 
 
 class Prefix(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, index=True)
     status = db.Column(db.String(64))
     prefix = db.Column(db.String(128), unique=True)
     next_hop_ip = db.Column(db.String(64))
