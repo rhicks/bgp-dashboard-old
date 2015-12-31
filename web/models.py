@@ -51,6 +51,7 @@ class Prefix(db.Model):
     created_timestamp  = db.Column(db.DateTime, default=datetime.now)
     modified_timestamp = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     autonomoussystem_asn = db.Column(db.Integer, db.ForeignKey('autonomous_system.asn'))
+    ip_version = db.Column(db.Integer)
 
     def __init__(self, *args, **kwargs):
         super(Prefix, self).__init__(*args, **kwargs)

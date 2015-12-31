@@ -3,12 +3,13 @@
 """BGP to SQLite
 
 Usage:
-  bgp2sql.py -f <filename>
+  bgp2sql.py -f <filename> -o <output_db>
   bgp2sql.py --version
 
 Options:
   -h --help     Show this screen.
   -f            File Name where "show ip bgp" data is located
+  -o            Name of database to be created/updated
   --version     Show version.
 
 """
@@ -20,18 +21,18 @@ import sqlite3
 from datetime import datetime
 import dns.resolver
 
-database_file = './bgp.db' # location of SQL database
+# database_file = '../datbase/bgp.db' # location of SQL database
 default_asn = 3701  # BGP ASN of the router where data was collected
 ipv4_regex  = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 
 
 def main(args):
-    if args['<filename>']:
+    if args['<filename>'] and args['<output_db>']:
         try:
             filename = args['<filename>']
             data = get_data(filename)
             #create_database()
-            write_to_db(data, database_file)
+            write_to_db(data, args['<output_db>'])
         except(FileNotFoundError):
             print("\nFile not found: {0}".format(filename), file=sys.stderr)
 
@@ -54,13 +55,13 @@ def write_to_db(data, database):
     # c.execute('delete from autonomous_system')
     conn.commit()
     for line in data:
-        status, prefix, next_hop_ip, metric, local_pref, weight, as_path, route_origin, origin_asn, next_hop_asn = line
+        status, prefix, next_hop_ip, metric, local_pref, weight, as_path, route_origin, origin_asn, next_hop_asn, ip_version = line
         c.execute('select asn from autonomous_system where asn = ?', (origin_asn,))
         if c.fetchone():
-            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn)))
+            c.execute('insert into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn), ip_version))
         else:
             c.execute('insert or ignore into autonomous_system values (?,?,?,?)', (origin_asn, asn_name_query(origin_asn), datetime.now(), datetime.now()))
-            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn)))
+            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?.?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn), ip_version))
     conn.commit()
 
 def asn_name_query(asn):
@@ -176,12 +177,12 @@ def build_full_prefix(status, prefix, line, ip_version):
         origin_asn = default_asn
         next_hop_asn = None
     return(status, prefix, next_hop_ip, metric, local_pref, weight,
-           as_path, route_origin, origin_asn, next_hop_asn)
+           as_path, route_origin, origin_asn, next_hop_asn, ip_version)
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='bgp2sql 0.0.1')
-    # print(arguments)
+    print(arguments)
     try:
         sys.exit(main(arguments))
     except(KeyboardInterrupt):
@@ -198,6 +199,7 @@ if __name__ == '__main__':
 
 # CREATE TABLE "prefix" (
 # 	`id`	INTEGER NOT NULL,
+#   `version`	INTEGER,
 # 	`status`	VARCHAR(64),
 # 	`prefix`	VARCHAR(128) UNIQUE,
 # 	`next_hop_ip`	VARCHAR(64),

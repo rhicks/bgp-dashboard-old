@@ -1,1 +1,18 @@
 {% extends "layout.html" %}
+{% block title %}Autonomous Systems{% endblock %}
+{% block content_title %}NERO BGP Dashboard{% endblock %}
+
+{% block content %}
+  <h2>BGP Stats</h2>
+  <p>Total Autonomous Systems: {{ autonomoussystems.count() }}</p>
+  <p>Total Prefixes: {{ prefixes.count() }}</p>
+  <p>IPv4 Prefixes: {{ ipv4_prefixes.count() }}</p>
+  <p>IPv6 Prefixes: {{ ipv6_prefixes.count() }}</p>
+  <p>BGP Peers: {{ peers.count() }}</p>
+  <h2>BGP Peers</h2>
+  {% for asn in peers %}
+    {% if (asn[0] != None) %}
+      <p>BGP Peer: {{ asn[0] }}
+    {% endif %}
+  {% endfor %}
+{% endblock %}
