@@ -3,16 +3,138 @@
 {% block content_title %}NERO BGP Dashboard{% endblock %}
 
 {% block content %}
-  <h2>BGP Stats</h2>
-  <p>Total Autonomous Systems: {{ autonomoussystems.count() }}</p>
-  <p>Total Prefixes: {{ prefixes.count() }}</p>
-  <p>IPv4 Prefixes: {{ ipv4_prefixes.count() }}</p>
-  <p>IPv6 Prefixes: {{ ipv6_prefixes.count() }}</p>
-  <p>BGP Peers: {{ peers.count() }}</p>
-  <h2>BGP Peers</h2>
-  {% for asn in peers %}
-    {% if (asn[0] != None) %}
-      <p>BGP Peer: {{ asn[0] }}
-    {% endif %}
-  {% endfor %}
+<!-- page content -->
+<div class="right_col" role="main">
+
+    <!-- top tiles -->
+    <div class="row tile_count">
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+                <span class="count_top">Autonomous Systems</span>
+                <div class="count">{{ '{0:,}'.format(autonomoussystems.count()) }}</div>
+                <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>4 </i> Since last update</span>
+            </div>
+        </div>
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+                <span class="count_top">IPv4 Prefixes</span>
+                <div class="count">{{ '{0:,}'.format(ipv4_prefixes.count()) }} </div>
+                <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>3 </i> Since last update</span>
+            </div>
+        </div>
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+              <span class="count_top">IPv6 Prefixes</span>
+              <div class="count">{{ '{0:,}'.format(ipv6_prefixes.count()) }} </div>
+                <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34 </i> Since last update</span>
+            </div>
+        </div>
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+              <span class="count_top">BGP Peers</span>
+              <div class="count">{{ '{0:,}'.format(peers.count()) }} </div>
+                <span class="count_bottom"><i class="red"><i class="fa fa-sort-desc"></i>12 </i> Since last update</span>
+            </div>
+        </div>
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+              <span class="count_top">Egress Connections</span>
+              <div class="count">{{ '{0:,}'.format(nexthop_ips.count()) }} </div>
+                <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34 </i> Since last update</span>
+            </div>
+        </div>
+        <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
+            <div class="left"></div>
+            <div class="right">
+                <span class="count_top">Last Update</span>
+                <div class="count">Today</div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /top tiles -->
+
+        <div class="clearfix"></div>
+
+        <div class="row">
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>BGP Peers <small>Sessions</small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li><a href="#"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href="#">Settings 1</a>
+                                    </li>
+                                    <li><a href="#">Settings 2</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <table id="example" class="table table-striped responsive-utilities jambo_table">
+                            <thead>
+                                <tr class="headings">
+                                    <th>
+                                        <input type="checkbox" class="tableflat">
+                                    </th>
+                                    <th>ASN </th>
+                                    <th>Name </th>
+                                    <th>Description </th>
+                                    <th>Updated </th>
+                                    <th class=" no-link last"><span class="nobr">Action</span>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                              {% for asn in peers %}
+                                <!-- <p><a href="{{ url_for('asn.index') }}">{{ asn.asn }}</a>{{asn.name}}</p> -->
+                                <tr>
+                                  <td class="a-center ">
+                                      <input type="checkbox" class="tableflat">
+                                  </td>
+                                  <td><a href="http://bgp.he.net/AS{{asn.asn}}">{{asn.asn}}</a></td>
+                                  {% if asn.name.split(' -', 1)[1] %}
+                                    <td>{{asn.name.split(' -', 1)[1]}}</td>
+                                    <td>{{asn.name.split(' -', 1)[0]}}</td>
+                                  {% else %}
+                                    <td>{{asn.name.split(' ', 1)[1]}}</td>
+                                    <td>{{asn.name.split(' ', 1)[0]}}</td>
+                                  {% endif %}
+                                  <td>2015-12-31 12:49:36</td>
+                                  <td class=" last"><a href="#">View</a>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <br />
+            <br />
+            <br />
+
+        </div>
+    </div>
+
+    <!-- footer content -->
+
+    <!-- /footer content -->
+</div>
+<!-- /page content -->
 {% endblock %}
