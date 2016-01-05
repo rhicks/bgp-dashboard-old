@@ -7,7 +7,9 @@ class AutonomousSystem(db.Model):
     name = db.Column(db.String(100))
     created_timestamp = db.Column(db.DateTime, default=datetime.now)
     modified_timestamp = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-    prefixes = db.relationship('Prefix', backref='autonomous_system', lazy='joined')
+    origin_prefixes = db.relationship('Prefix', backref='autonomous_system', lazy='joined')
+    #best_route_prefixes = db.relationship('Prefix', backref='autonomous_system', lazy='joined')
+
 
     def __init__(self, *args, **kwargs):
         super(AutonomousSystem, self).__init__(*args, **kwargs)
@@ -47,10 +49,10 @@ class Prefix(db.Model):
     as_path = db.Column(db.Text)
     route_origin = db.Column(db.String(64))
     origin_asn = db.Column(db.Integer)
-    next_hop_asn  = db.Column(db.Integer)
+    next_hop_asn  = db.Column(db.Integer, db.ForeignKey('autonomous_system.asn'))
     created_timestamp  = db.Column(db.DateTime, default=datetime.now)
     modified_timestamp = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-    autonomoussystem_asn = db.Column(db.Integer, db.ForeignKey('autonomous_system.asn'))
+    # autonomoussystem_asn = db.Column(db.Integer, db.ForeignKey('autonomous_system.asn'))
     ip_version = db.Column(db.Integer)
 
     def __init__(self, *args, **kwargs):

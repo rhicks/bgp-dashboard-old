@@ -58,10 +58,11 @@ def write_to_db(data, database):
         status, prefix, next_hop_ip, metric, local_pref, weight, as_path, route_origin, origin_asn, next_hop_asn, ip_version = line
         c.execute('select asn from autonomous_system where asn = ?', (origin_asn,))
         if c.fetchone():
-            c.execute('insert into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn), ip_version))
+            c.execute('insert into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, ip_version, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), datetime.now()))
         else:
-            c.execute('insert or ignore into autonomous_system values (?,?,?,?)', (origin_asn, asn_name_query(origin_asn), datetime.now(), datetime.now()))
-            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?.?)', (None, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), int(origin_asn), ip_version))
+            # c.execute('insert or ignore into autonomous_system values (?,?,?,?)', (origin_asn, asn_name_query(origin_asn), datetime.now(), datetime.now()))
+            c.execute('insert or ignore into autonomous_system values (?,?,?,?,?)', (origin_asn, origin_asn, datetime.now(), datetime.now(), datetime.now()))
+            c.execute('insert or ignore into prefix values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (None, ip_version, status, prefix, next_hop_ip, metric, local_pref, weight, str(as_path), route_origin, origin_asn, next_hop_asn, datetime.now(), datetime.now(), datetime.now()))
     conn.commit()
 
 def asn_name_query(asn):
