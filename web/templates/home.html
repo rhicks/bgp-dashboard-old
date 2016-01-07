@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<table id="example" class="table table-striped responsive-utilities jambo_table">
+  <thead>
+      <tr class="headings">
+          <th>ASN </th>
+          <th>Name </th>
+          <th>Description </th>
+          <th>Orginated Routes </th>
+          <th>Transit Routes </th>
+          <th>Peering Sessions </th>
+          <th>Updated </th>
+      </tr>
+  </thead>
+  {% for asn in peers %}
+    {% set dnsname = asn.asn_name_query() %}
+  <tr>
+    <td><a href="http://bgp.he.net/AS{{asn.asn}}">{{asn.asn}}</a></td>
+    {% if dnsname.split(' -', 1)[1] %}
+      <td>{{dnsname.split(' -', 1)[1]}}</td>
+      <td>{{dnsname.split(' -', 1)[0]}}</td>
+    {% else %}
+      <td>{{dnsname.split(' ', 1)[1]}}</td>
+      <td>{{dnsname.split(' ', 1)[0]}}</td>
+    {% endif %}
+    <td>{{asn.origin_prefixes.count()}}</td>
+    <td>{{asn.best_routes.count()}}</td>
+    <td>{{asn.peering_sessions(asn)}}</td>
+    <td>{{asn.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
