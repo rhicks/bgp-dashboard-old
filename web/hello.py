@@ -40,7 +40,7 @@ class ASN(db.Model):
         stuff = db.session.execute('select distinct next_hop_ip from prefix where next_hop_asn == %d' % asn.asn)
         for thing in stuff:
             counter.append(thing)
-        return(len(counter))
+        return(counter)
 
     def __repr__(self):
         return '<ASN: %s>' % self.asn
@@ -77,6 +77,15 @@ def index():
     nexthop_ips  = db.session.query(Prefix.next_hop_ip.distinct())
     peers = autonomoussystems.filter(ASN.asn.in_(nexthop_asns))
     return render_template('home.html', **locals())
+
+@app.route('/asn/<asn>')
+def asn(asn):
+    print(asn)
+    # ASN.query.all()
+    autonomous_system = ASN.query.filter(ASN.asn == asn).first()
+
+    print(autonomous_system.asn)
+    return render_template('asn.html', **locals())
 
 if __name__ == '__main__':
     app.run(debug=True)
