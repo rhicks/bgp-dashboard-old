@@ -22,9 +22,9 @@ class ASN(db.Model):
     origin_prefixes = db.relationship('Prefix', foreign_keys='Prefix.origin_asn', lazy='dynamic')
     best_routes = db.relationship('Prefix', foreign_keys='Prefix.next_hop_asn', lazy='dynamic')
 
-    def __init__(self, asn, name):
-        self.asn = asn
-        self.name = name
+    # def __init__(self, asn, name):
+    #     self.asn = asn
+    #     self.name = name
 
     def asn_name_query(self, asn):
         if self.name is None or self.name == str(asn):
@@ -50,7 +50,7 @@ class ASN(db.Model):
                     self.name = None
                     db.session.add(self)
                     db.session.commit()
-                    return("DNS Timeout")
+                    return("(DNS Error)")
         else:
             return self.name
 
@@ -59,8 +59,11 @@ class ASN(db.Model):
         resolver = dns.resolver.Resolver()
         resolver.timeout = 1
         resolver.lifetime = 1
-        #print(str(resolver.query(addr,"PTR")[0])[:-1])
-        return str(resolver.query(addr,"PTR")[0])[:-1]
+        try:
+            print(str(resolver.query(addr,"PTR")[0])[:-1])
+            return str(resolver.query(addr,"PTR")[0])[:-1]
+        except:
+            return("(DNS Error)")
 
     def peering_sessions(self, asn):
         counter = []
@@ -109,10 +112,6 @@ def index():
 @app.route('/asn/<asn>')
 def asn(asn):
     autonomous_system = ASN.query.filter(ASN.asn == asn).first()
-    # autonomoussystems = db.session.query(ASN)
-    # nexthop_asns = db.session.query(Prefix.next_hop_asn.distinct())
-    # nexthop_ips  = db.session.query(Prefix.next_hop_ip.distinct())
-    # peers = autonomoussystems.filter(ASN.asn.in_(nexthop_asns))
     return render_template('asn.html', **locals())
 
 if __name__ == '__main__':

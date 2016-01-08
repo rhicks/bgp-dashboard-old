@@ -13,18 +13,12 @@
 	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
 	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/dataTables.bootstrap.min.js"></script>
 	<script type="text/javascript" class="init">
-
-$(document).ready(function() {
-	$('#example').DataTable();
-} );
-	</script>
-  
-<script type="text/javascript" class="init">
-var table = $('#example').DataTable();
-$('#_100').on( 'click', function () {
-    table.page.len( 100 ).draw();
-} );
-
+  $(document).ready(function() {
+      $('#example').DataTable( {
+          "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+          "aaSorting": []
+      } );
+  } );
 	</script>
 </head>
 {% block content %} {% endblock %}

@@ -37,12 +37,19 @@
       </thead>
       {% for prefix in autonomous_system.origin_prefixes %}
       <tr>
-        <td>{{ prefix.prefix }}</td>
+        <td><a href="http://bgp.he.net/ip/{{prefix.prefix.split('/')[0]}}">{{ prefix.prefix }}</a></td>
         <td>{{ prefix.ip_version }}</td>
         <td><a href="{{prefix.next_hop_asn}}">{{prefix.next_hop_asn}}</a></td>
         <td>{{ prefix.next_hop_ip }}</td>
         <td>{{ prefix.local_pref }}</td>
-        <td>{{ prefix.as_path }}</td>
+        <td>
+          [
+          {% set asn_list = prefix.as_path.strip('[]').replace('\'', '').replace(' ', '') %}
+          {% for asn in asn_list.split(',') %}
+            <a href="{{asn}}">{{asn}}</a>,
+          {% endfor %}
+          ]
+        </td>
         <td>{{ autonomous_system.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z") }}</td>
       </tr>
     {% endfor %}
