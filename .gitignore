@@ -6,5 +6,5 @@ ipv6-full*
 .coverage
 .cache/
 .DS_Store
-bgp.db
+bgp.db*
 bgp_dev/

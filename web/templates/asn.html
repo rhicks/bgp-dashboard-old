@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+{{ autonomous_system.asn }}
+<br>
+{{ autonomous_system.asn_name_query() }}
+<br>
+{{ autonomous_system.created_timestamp }}
+<br>
+{{ autonomous_system.modified_timestamp }}
+<br>
+{{ autonomous_system.verified_timestamp }}
+<br>
+{% for prefix in autonomous_system.origin_prefixes %}
+  {{ prefix }}
+  <br>
+{% endfor %}
+<br>
+{% for prefix in autonomous_system.best_routes %}
+  {{ prefix }}
+  <br>
+{% endfor %}
+{% endblock %}
