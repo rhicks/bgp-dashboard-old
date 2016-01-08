@@ -1,22 +1,50 @@
 {% extends "layout.html" %}
 {% block content %}
-{{ autonomous_system.asn }}
-<br>
-{{ autonomous_system.asn_name_query() }}
-<br>
-{{ autonomous_system.created_timestamp }}
-<br>
-{{ autonomous_system.modified_timestamp }}
-<br>
-{{ autonomous_system.verified_timestamp }}
-<br>
-{% for prefix in autonomous_system.origin_prefixes %}
-  {{ prefix }}
-  <br>
-{% endfor %}
-<br>
-{% for prefix in autonomous_system.best_routes %}
-  {{ prefix }}
-  <br>
-{% endfor %}
+<body class="nav-sm">
+  <div class="container body">
+    <div class="main_container">
+      <!-- top navigation -->
+      <div class="top_nav">
+        <div class="nav_menu">
+          <a href="/" class="site_title"><i class="fa fa-arrows"></i>BGP Dashboard</a>
+        </div>
+      </div>
+      <!-- /top navigation -->
+      <div class="right_col" role="main">
+
+  {% if autonomous_system is none %}
+    <p>ASN not found<p>
+  {% else %}
+    {% set dnsname = autonomous_system.asn_name_query(autonomous_system.asn) %}
+    <h1>ASN: {{ autonomous_system.asn }}</h1>
+    <h3>{{ autonomous_system.name }}</h3>
+    <hr>
+    <table id="example" class="table table-striped responsive-utilities table-condensed">
+      <thead>
+          <tr class="headings">
+              <th>Prefix </th>
+              <th>IP Version </th>
+              <th>Next Hop ASN </th>
+              <th>Next Hop IP </th>
+              <th>Local Pref </th>
+              <th>Full AS Path </th>
+              <th>Modified </th>
+          </tr>
+      </thead>
+      {% for prefix in autonomous_system.origin_prefixes %}
+      <tr>
+        <td>{{ prefix.prefix }}</td>
+        <td>{{ prefix.ip_version }}</td>
+        <td><a href="{{prefix.next_hop_asn}}">{{prefix.next_hop_asn}}</a></td>
+        <td>{{ prefix.next_hop_ip }}</td>
+        <td>{{ prefix.local_pref }}</td>
+        <td>{{ prefix.as_path }}</td>
+        <td>{{ autonomous_system.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z") }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
+</div>
+</div>
+</body>
 {% endblock %}

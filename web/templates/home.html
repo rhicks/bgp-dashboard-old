@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
+<br>
 <body class="nav-sm">
   <div class="container body">
     <div class="main_container">
@@ -19,7 +20,6 @@
                   <div class="right">
                       <span class="count_top">Autonomous Systems</span>
                       <div class="count">{{ '{0:,}'.format(autonomoussystems.count()) }}</div>
-                      <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>4 </i> Since last update</span>
                   </div>
               </div>
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -27,7 +27,6 @@
                   <div class="right">
                       <span class="count_top">IPv4 Prefixes</span>
                       <div class="count">{{ '{0:,}'.format(ipv4_prefixes.count()) }} </div>
-                      <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>3 </i> Since last update</span>
                   </div>
               </div>
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -35,7 +34,6 @@
                   <div class="right">
                     <span class="count_top">IPv6 Prefixes</span>
                     <div class="count">{{ '{0:,}'.format(ipv6_prefixes.count()) }} </div>
-                      <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34 </i> Since last update</span>
                   </div>
               </div>
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -43,7 +41,6 @@
                   <div class="right">
                     <span class="count_top">BGP Peers</span>
                     <div class="count">{{ '{0:,}'.format(peers.count()) }} </div>
-                      <span class="count_bottom"><i class="red"><i class="fa fa-sort-desc"></i>12 </i> Since last update</span>
                   </div>
               </div>
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -51,7 +48,6 @@
                   <div class="right">
                     <span class="count_top">Peering Sessions</span>
                     <div class="count">{{ '{0:,}'.format(nexthop_ips.count()) }} </div>
-                      <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34 </i> Since last update</span>
                   </div>
               </div>
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -64,23 +60,23 @@
           </div>
           <!-- /top tiles -->
       <!-- page content -->
-      <table id="example" class="table table-striped responsive-utilities jambo_table">
+      <hr>
+      <table id="example" class="table table-striped responsive-utilities jambo_table table-condensed">
         <thead>
             <tr class="headings">
                 <th>ASN </th>
                 <th>Name </th>
                 <th>Description </th>
-                <th>Orginated Routes </th>
-                <th>Transit Routes </th>
-                <th>Peering Sessions </th>
-                <th>Selected Routes </th>
+                <th>Orginated Routes v4/v6</th>
+                <th>Transit Routes v4/v6</th>
+                <th>Peering Sessions v4/v6</th>
                 <th>Updated </th>
             </tr>
         </thead>
         {% for asn in peers %}
-          {% set dnsname = asn.asn_name_query() %}
+          {% set dnsname = asn.asn_name_query(asn.asn) %}
         <tr>
-          <td><a href="http://bgp.he.net/AS{{asn.asn}}">{{asn.asn}}</a></td>
+          <td><a href="asn\{{asn.asn}}">{{asn.asn}}</a></td>
           {% if dnsname.split(' -', 1)[1] %}
             <td>{{dnsname.split(' -', 1)[1]}}</td>
             <td>{{dnsname.split(' -', 1)[0]}}</td>
@@ -91,13 +87,6 @@
           <td>{{asn.origin_prefixes.count()}}</td>
           <td>{{asn.best_routes.count()}}</td>
           <td>{{asn.peering_sessions(asn)|length}}</td>
-          <td class="project_progress">
-            <div class="progress progress_sm">
-                {% set precent = (asn.best_routes.count()/autonomoussystems.count()) * 10 %}
-                <div class="progress-bar bg-green" role="progressbar" data-transitiongoal={{precent}} aria-valuenow={{precent}} style="width: {{precent}}%;"></div>
-            </div>
-            <small>{{ '{:.2f}'.format(precent) }}% Routes</small>
-          </td>
           <td>{{asn.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}}</td>
         </tr>
         {% endfor %}

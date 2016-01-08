@@ -4,6 +4,8 @@ from sqlalchemy import Table
 from sqlalchemy import func
 from datetime import datetime
 import dns.resolver
+import dns.reversename
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database/bgp.db'
@@ -11,6 +13,7 @@ db = SQLAlchemy(app)
 
 class ASN(db.Model):
     __tablename__ = 'autonomous_system'
+
     asn = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String(100))
     created_timestamp = db.Column(db.DateTime, default=datetime.now)
@@ -19,21 +22,37 @@ class ASN(db.Model):
     origin_prefixes = db.relationship('Prefix', foreign_keys='Prefix.origin_asn', lazy='dynamic')
     best_routes = db.relationship('Prefix', foreign_keys='Prefix.next_hop_asn', lazy='dynamic')
 
-    def asn_name_query(asn):
-        query = 'AS' + str(asn.asn) + '.asn.cymru.com'
-        #print(query) ## enable for debuging
-        resolver = dns.resolver.Resolver()
-        resolver.timeout = 1
-        resolver.lifetime = 1
-        try:
-            answers = resolver.query(query, 'TXT')
-            for rdata in answers:
-                for txt_string in rdata.strings:
-                    #print(txt_string) ## enable for debuging
-                    return txt_string.split('|')[-1].split(",", 2)[0].strip()
-        except:
-            #print("None") ## enable for debuging
-            return("None")
+    def __init__(self, asn, name):
+        self.asn = asn
+        self.name = name
+
+    def asn_name_query(self, asn):
+        if self.name is None or self.name == str(asn):
+            if 64512 <= asn <= 65534:
+                self.name = "RFC6996 - Private Use ASN"
+                db.session.add(self)
+                db.session.commit()
+                return("RFC6996 - Private Use ASN")
+            else:
+                query = 'AS' + str(asn) + '.asn.cymru.com'
+                resolver = dns.resolver.Resolver()
+                resolver.timeout = 1
+                resolver.lifetime = 1
+                try:
+                    answers = resolver.query(query, 'TXT')
+                    for rdata in answers:
+                        for txt_string in rdata.strings:
+                            self.name = txt_string.split('|')[-1].split(",", 2)[0].strip()
+                            db.session.add(self)
+                            db.session.commit()
+                            return txt_string.split('|')[-1].split(",", 2)[0].strip()
+                except:
+                    self.name = None
+                    db.session.add(self)
+                    db.session.commit()
+                    return("DNS Timeout")
+        else:
+            return self.name
 
     def peering_sessions(self, asn):
         counter = []
@@ -80,11 +99,11 @@ def index():
 
 @app.route('/asn/<asn>')
 def asn(asn):
-    print(asn)
-    # ASN.query.all()
     autonomous_system = ASN.query.filter(ASN.asn == asn).first()
-
-    print(autonomous_system.asn)
+    # autonomoussystems = db.session.query(ASN)
+    # nexthop_asns = db.session.query(Prefix.next_hop_asn.distinct())
+    # nexthop_ips  = db.session.query(Prefix.next_hop_ip.distinct())
+    # peers = autonomoussystems.filter(ASN.asn.in_(nexthop_asns))
     return render_template('asn.html', **locals())
 
 if __name__ == '__main__':

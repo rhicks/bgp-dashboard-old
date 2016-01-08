@@ -17,6 +17,13 @@
 $(document).ready(function() {
 	$('#example').DataTable();
 } );
+	</script>
+  
+<script type="text/javascript" class="init">
+var table = $('#example').DataTable();
+$('#_100').on( 'click', function () {
+    table.page.len( 100 ).draw();
+} );
 
 	</script>
 </head>
