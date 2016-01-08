@@ -18,6 +18,10 @@
     {% set dnsname = autonomous_system.asn_name_query(autonomous_system.asn) %}
     <h1>ASN: {{ autonomous_system.asn }}</h1>
     <h3>{{ autonomous_system.name }}</h3>
+    <h6>Peering Sessions:</h6>
+    {% for peer_ip in autonomous_system.peering_sessions(autonomous_system) %}
+      <h6>{{ peer_ip }} - {{ autonomous_system.reverse_dns_query(peer_ip) }} </h6>
+    {% endfor %}
     <hr>
     <table id="example" class="table table-striped responsive-utilities table-condensed">
       <thead>

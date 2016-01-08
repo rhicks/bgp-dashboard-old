@@ -54,11 +54,20 @@ class ASN(db.Model):
         else:
             return self.name
 
+    def reverse_dns_query(self, ip):
+        addr = dns.reversename.from_address(ip)
+        resolver = dns.resolver.Resolver()
+        resolver.timeout = 1
+        resolver.lifetime = 1
+        #print(str(resolver.query(addr,"PTR")[0])[:-1])
+        return str(resolver.query(addr,"PTR")[0])[:-1]
+
     def peering_sessions(self, asn):
         counter = []
         stuff = db.session.execute('select distinct next_hop_ip from prefix where next_hop_asn == %d' % asn.asn)
         for thing in stuff:
-            counter.append(thing)
+            counter.append(thing[0])
+            #print(thing[0])
         return(counter)
 
     def __repr__(self):
