@@ -43,5 +43,38 @@
       </tr>
     {% endfor %}
     </table>
+    <hr>
+    <h3>Transit Prefixes</h3>
+    <table id="prefix_list" class="table table-striped table-bordered table-condensed table-hover table-responsive">
+      <thead>
+          <tr class="headings">
+              <th>Prefix </th>
+              <th>IP Version </th>
+              <th>Next Hop ASN </th>
+              <th>Next Hop IP </th>
+              <th>Local Pref </th>
+              <th>Full AS Path </th>
+              <th>Modified </th>
+          </tr>
+      </thead>
+      {% for prefix in autonomous_system.best_routes %}
+      <tr>
+        <td><a href="http://bgp.he.net/ip/{{prefix.prefix.split('/')[0]}}">{{ prefix.prefix }}</a></td>
+        <td>{{ prefix.ip_version }}</td>
+        <td><a href="{{prefix.next_hop_asn}}">{{prefix.next_hop_asn}}</a></td>
+        <td>{{ prefix.next_hop_ip }}</td>
+        <td>{{ prefix.local_pref }}</td>
+        <td>
+          [
+          {% set asn_list = prefix.as_path.strip('[]').replace('\'', '').replace(' ', '') %}
+          {% for asn in asn_list.split(',') %}
+            <a href="{{asn}}">{{asn}}</a>,
+          {% endfor %}
+          ]
+        </td>
+        <td>{{ prefix.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z") }}</td>
+      </tr>
+    {% endfor %}
+    </table>
   {% endif %}
 {% endblock %}
