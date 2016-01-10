@@ -14,12 +14,36 @@
 	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/dataTables.bootstrap.min.js"></script>
 	<script type="text/javascript" class="init">
   $(document).ready(function() {
-      $('#example').DataTable( {
-          "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+      $('#prefix_list').DataTable( {
+          "lengthMenu": [[-1, 25, 50, 100], ["All", 25, 50, 100]],
           "aaSorting": []
       } );
   } );
+
+  $(document).ready(function() {
+      $('#peers_list').DataTable( {
+          "lengthMenu": [[-1, 25, 50, 100], ["All", 25, 50, 100]],
+          "aaSorting": []
+      } );
+  } );
+
 	</script>
 </head>
-{% block content %} {% endblock %}
+<body class="nav-sm">
+  <div class="container-fluid">
+    <div class="main_container">
+      <!-- top navigation -->
+      <div class="top_nav">
+        <div class="nav_menu">
+          <a href="/" class="site_title"><i class="fa fa-arrows"></i>BGP Dashboard</a>
+        </div>
+      </div>
+      <!-- /top navigation -->
+      <div class="right_col" role="main">
+        {% block content %} {% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>

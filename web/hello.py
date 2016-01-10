@@ -73,6 +73,30 @@ class ASN(db.Model):
             #print(thing[0])
         return(counter)
 
+    def ipv4_peer_count(self, asn):
+        cursor = db.session.execute('select count(distinct next_hop_ip) from prefix where ip_version == 4 and next_hop_asn == %d' % asn.asn)
+        return cursor.scalar()
+
+    def ipv6_peer_count(self, asn):
+        cursor = db.session.execute('select count(distinct next_hop_ip) from prefix where ip_version == 6 and next_hop_asn == %d' % asn.asn)
+        return cursor.scalar()
+
+    def ipv4_origin_count(self, asn):
+        cursor = db.session.execute('select count(prefix) from prefix where ip_version == 4 and origin_asn == %d' % asn.asn)
+        return cursor.scalar()
+
+    def ipv6_origin_count(self, asn):
+        cursor = db.session.execute('select count(prefix) from prefix where ip_version == 6 and origin_asn == %d' % asn.asn)
+        return cursor.scalar()
+
+    def ipv4_transit_count(self, asn):
+        cursor = db.session.execute('select count(prefix) from prefix where ip_version == 4 and next_hop_asn == %d' % asn.asn)
+        return cursor.scalar()
+
+    def ipv6_transit_count(self, asn):
+        cursor = db.session.execute('select count(prefix) from prefix where ip_version == 6 and next_hop_asn == %d' % asn.asn)
+        return cursor.scalar()
+
     def __repr__(self):
         return '<ASN: %s>' % self.asn
 

@@ -1,18 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-<br>
-<body class="nav-sm">
-  <div class="container body">
-    <div class="main_container">
-      <!-- top navigation -->
-      <div class="top_nav">
-        <div class="nav_menu">
-          <a href="/" class="site_title"><i class="fa fa-arrows"></i>BGP Dashboard</a>
-        </div>
-      </div>
-      <!-- /top navigation -->
-      <div class="right_col" role="main">
-
           <!-- top tiles -->
           <div class="row tile_count">
               <div class="animated flipInY col-md-2 col-sm-4 col-xs-4 tile_stats_count">
@@ -61,7 +48,8 @@
           <!-- /top tiles -->
       <!-- page content -->
       <hr>
-      <table id="example" class="table table-striped responsive-utilities jambo_table table-condensed">
+      <h3>BGP Peers</h3>
+      <table id="peers_list" class="table table-striped table-bordered table-condensed table-hover table-responsive">
         <thead>
             <tr class="headings">
                 <th>ASN </th>
@@ -84,15 +72,12 @@
             <td>{{dnsname.split(' ', 1)[1]}}</td>
             <td>{{dnsname.split(' ', 1)[0]}}</td>
           {% endif %}
-          <td>{{asn.origin_prefixes.count()}}</td>
-          <td>{{asn.best_routes.count()}}</td>
-          <td>{{asn.peering_sessions(asn)|length}}</td>
+          <td>{{asn.ipv4_origin_count(asn)}}/{{asn.ipv6_origin_count(asn)}}</td>
+          <td>{{asn.ipv4_transit_count(asn)}}/{{asn.ipv6_transit_count(asn)}}</td>
+          <td>{{asn.ipv4_peer_count(asn)}}/{{asn.ipv6_peer_count(asn)}}</td>
           <td>{{asn.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}}</td>
         </tr>
         {% endfor %}
       </table>
       <!-- /page content -->
-    </div>
-  </div>
-</body>
 {% endblock %}
