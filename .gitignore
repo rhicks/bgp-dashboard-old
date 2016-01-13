@@ -2,9 +2,9 @@ __pycache__/
 *.py[cod]
 bgp-data-full*
 ipv6-full*
-*.txt
 .coverage
 .cache/
 .DS_Store
 bgp.db*
 bgp_dev/
+raw_input_files/

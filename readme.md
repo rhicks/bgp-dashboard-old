@@ -1,73 +1,75 @@
 BGP Dashboard
 =============
 
-A work in progress
+A "realtime" web view of your BGP network
 
-##### Run tests: #####
- - cd $REPO/bgp-dashboard/src
- - python3 -m unittest
-
-##### Brain Storming: #####
-get a list of the "show ip bgp" data from a cisco router
-  - cloginrc
-  - paramiko
-  - text file
+- Who do I peer with?
+- How many routes do I receive from my peers?
+- Who do I use for tranist?
+- What AS path does a prefix take out of my network?
+- How many routes and autonomous systems do I see?
 
 
-The program should take a "show ip bgp" input and provide a list of all next hop entities.
-Allow for tracking and notification of changes to a set of "monitored" ASN numbers.
+How it works
+---------
+> Work in progress and many things are broken or changing. This is alpha code.
 
-e.g.
+###### Read data from the output of Cisco 'show ip bgp' and 'show ipv6 unicast' commands
+- Currently a manual process running outside of the bgp-dashboard application.  
+- Setup a rancid/clogin, or similar cli automation tool, reoccurring cron job to grab the data and save locally as text.
 
-Website ideas:
-A "realtime" dashboard with stats:
- - Total number of bgp peers
- - Total prefixes received from each peer
- - Number of routes using that BGP peer as a next hop
- - Next hop provider for a list of monitored ASN numbers
- - Configure alerts for monitored ASN numbers next hop provider changes (email, pager, etc...)
- - Ability to search for ASN/IP and find the next hop and full AS path
+###### Store the data into a SQLite database
+- After the 'show ip bgp' data is saved locally, run bgp2sql.py from the scripts folder to build/update the SQLite database.
+- Again, best to automate this via a cron job at regular intervals.
 
-
-Thoughts:
- - Use BMP via ExaBGP to monitor realtime BGP changes
- - How to monitor routes in the routing table vs other "available" routes to the destination
+###### Start the Flask application and view the data
+- [Flask](http://flask.pocoo.org/), [SQLAlchemy](http://flask-sqlalchemy.pocoo.org/), [Bootstrap](http://getbootstrap.com/), and various JavaScript libraries are used to present the data via the web
 
 
-Get Data
- The program should log into the router a $TIME interval and pull the "show ip bgp" and "show ip bgp ipv6 unicast" for parsing
+Screenshots
+---------
+(TODO) - Add screenshots
 
 
-CLI:
-bgp-dashboard.py 15169 -f bgp-data.txt
-  Is 15169 a peer?  Print JSON "y" or "n"
-  If "y", print misc details:
-    - next_hop_ip
-    - number of prefixes that use this ASN as next hop
-    - list/count of next-hop-asns connected to this ASN
 
-bgp-dashboard.py 15169 --next-hop-asn -f bgp-data.txt
-  Returns a list (JSON) of next hop ASNs for all routes for under 15169
+Requirements
+---------
+```
+Python 3.4+
+dnspython3
+docopt
+Flask
+Flask-SQLAlchemy
+```
 
-bgp-dashboard.py 15169 --routes -f bgp-data.txt
-  Returns a list (JSON) of all routes under 15169
-  All route details provided
+Install
+---------
+```
+$ git clone https://github.com/rhicks/bgp-dashboard.git
+$ cd bgp-dashboard
+$ pip3 install -r requirements.txt
+...(TODO) - Create the database
+...(TODO) - Setup cron jobs
+$ python3 web/hello.py (TODO) - Change the name of the app
+```
 
-bgp-dashboard.py 15169 --routes --brief -f bgp-data.txt
-  Returns a list (JSON) of all routes under 15169
-  Just the prefix is provided
+Development Workflow
+---------
+```
+$ git clone https://github.com/rhicks/bgp-dashboard.git
+$ cd bgp-dashboard
+$ [sudo] pip install virtualenv
+$ [sudo] pip install virtualenvwrapper # Read virtualenvwrapper install instructions for shell integration
+$ mkvirtualenv --python=`which python3` bgp-dashboard
+$ workon bgp-dashboard
+$ pip install -r requirements.txt
+```
 
-bgp-dashboard.py -f bgp-data.txt
-  Return a list (JSON) of all peers
-  - Total number of peers
-    - AS Number of peer
-    - Name via cmyru dns
-    - Total routes
-    - Unique next-hop-asns
-      - Count of routes associated with each next-hop-asn
-
-bgp-dashboard.py --table-size -f bgp-data.txt
-  Return the number for routes
-
-bgp-dashboard.py --as-count -f bgp-data.txt
-  Return the number for routes
+Todo
+---------
+- Use [netmiko](https://github.com/ktbyers/netmiko) to automate the download of BGP data from routers
+- Investigate the use of BMP to trigger updates
+- Add ability to search for ASN/IP and find the next hop and full AS path
+- Add support for other router vendors
+- Add ability to monitor ASN or Prefix changes (next hop IP, next hop ASN, AS path, etc...)
+- Add alerting for monitored ASN/Prefixes (email, pager, etc...)
