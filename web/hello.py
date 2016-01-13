@@ -138,5 +138,10 @@ def asn(asn):
     autonomous_system = ASN.query.filter(ASN.asn == asn).first()
     return render_template('asn.html', **locals())
 
+@app.route('/asn/<asn>/routes')
+def routes(asn):
+    autonomous_system = ASN.query.filter(ASN.asn == asn).first()
+    return render_template('routes.html', **locals())
+
 if __name__ == '__main__':
     app.run(debug=True)
