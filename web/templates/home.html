@@ -45,6 +45,20 @@
                   </div>
               </div>
           </div>
+          <hr>
+          <div class="row tile_count">
+           <div class="col-md-3 col-sm-3 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h4>BGP Table Size <small> IPv4/IPv6 Routes</small></h4>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <canvas id="canvas1" height="150" width="150" style="width: 150px; height: 150px;"></canvas>
+                </div>
+            </div>
+          </div>
+        </div>
           <!-- /top tiles -->
       <!-- page content -->
       <hr>
@@ -80,4 +94,29 @@
         {% endfor %}
       </table>
       <!-- /page content -->
+      <script>
+    var doughnutData = [
+        {
+            value:{{ ipv4_prefixes.count()}},
+            color: "#455C73"
+        },
+        {
+            value:{{ ipv6_prefixes.count()}},
+            color: "#9B59B6"
+        },
+        {
+            value: 60,
+            color: "#BDC3C7"
+        },
+        {
+            value: 100,
+            color: "#26B99A"
+        },
+        {
+            value: 120,
+            color: "#3498DB"
+        }
+];
+    var myDoughnut = new Chart(document.getElementById("canvas1").getContext("2d")).Doughnut(doughnutData);
+</script>
 {% endblock %}
