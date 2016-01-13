@@ -11,7 +11,7 @@
       <h6>{{ peer_ip }} - {{ autonomous_system.reverse_dns_query(peer_ip) }} </h6>
     {% endfor %}
     <hr>
-    <h3>Originated Prefixes</h3>
+    <h3>BGP routes selected to use AS{{ autonomous_system.asn }} as the next hop</h3>
     <table id="prefix_list" class="table table-striped table-bordered table-condensed table-hover table-responsive">
       <thead>
           <tr class="headings">
@@ -24,7 +24,7 @@
               <th>Modified </th>
           </tr>
       </thead>
-      {% for prefix in autonomous_system.origin_prefixes %}
+      {% for prefix in autonomous_system.best_routes %}
       <tr>
         <td><a href="http://bgp.he.net/ip/{{prefix.prefix.split('/')[0]}}">{{ prefix.prefix }}</a></td>
         <td>{{ prefix.ip_version }}</td>
@@ -35,7 +35,7 @@
           [
           {% set asn_list = prefix.as_path.strip('[]').replace('\'', '').replace(' ', '') %}
           {% for asn in asn_list.split(',') %}
-            <a href="{{asn}}">{{asn}}</a>,
+            <a href=/asn/{{asn}}>{{asn}}</a>,
           {% endfor %}
           ]
         </td>

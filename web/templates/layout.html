@@ -15,14 +15,14 @@
 	<script type="text/javascript" class="init">
   $(document).ready(function() {
       $('#prefix_list').DataTable( {
-          "lengthMenu": [[-1, 25, 50, 100], ["All", 25, 50, 100]],
+          "lengthMenu": [[1000, 250, 500, -1], [1000, 250, 500, "All"]],
           "aaSorting": []
       } );
   } );
 
   $(document).ready(function() {
       $('#peers_list').DataTable( {
-          "lengthMenu": [[-1, 25, 50, 100], ["All", 25, 50, 100]],
+          "lengthMenu": [[-1, 250, 500, 1000], ["All", 250, 500, 1000]],
           "aaSorting": []
       } );
   } );
@@ -33,10 +33,11 @@
   <div class="container-fluid">
     <div class="main_container">
       <!-- top navigation -->
-      <div class="top_nav">
-        <div class="nav_menu">
-          <a href="/" class="site_title"><i class="fa fa-arrows"></i>BGP Dashboard</a>
-        </div>
+      <br>
+      <div class="jumbotron">
+        <h1>ASN 3701</h1>
+        <p>NERONET - Network for Education and Research in Oregon (NERO)</p>
+        <p><a href="/" class="btn btn-primary btn-lg" href="#" role="button">Home</a></p>
       </div>
       <!-- /top navigation -->
       <div class="right_col" role="main">

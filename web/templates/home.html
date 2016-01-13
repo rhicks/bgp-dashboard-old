@@ -55,8 +55,8 @@
                 <th>ASN </th>
                 <th>Name </th>
                 <th>Description </th>
-                <th>Orginated Routes v4/v6</th>
-                <th>Transit Routes v4/v6</th>
+                <th>Orginated Prefixes</th>
+                <th>BGP Routes</th>
                 <th>Peering Sessions v4/v6</th>
                 <th>Updated </th>
             </tr>
@@ -72,8 +72,8 @@
             <td>{{dnsname.split(' ', 1)[1]}}</td>
             <td>{{dnsname.split(' ', 1)[0]}}</td>
           {% endif %}
-          <td>{{asn.ipv4_origin_count(asn)}}/{{asn.ipv6_origin_count(asn)}}</td>
-          <td>{{asn.ipv4_transit_count(asn)}}/{{asn.ipv6_transit_count(asn)}}</td>
+          <td><a href="asn\{{asn.asn}}">{{asn.origin_prefixes.count()}}</a></td>
+          <td><a href="asn\{{asn.asn}}\routes">{{asn.best_routes.count()}}</a></td>
           <td>{{asn.ipv4_peer_count(asn)}}/{{asn.ipv6_peer_count(asn)}}</td>
           <td>{{asn.modified_timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}}</td>
         </tr>
